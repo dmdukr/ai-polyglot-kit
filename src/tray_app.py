@@ -273,7 +273,9 @@ class TrayApp:
             ),
             Menu.SEPARATOR,
             MenuItem(
-                lambda text: f"Update to v{self._pending_update['version']}" if self._pending_update else "Check for updates",
+                lambda text: (t("tray.update_install", version=self._pending_update['version'])
+                             if self._pending_update
+                             else t("tray.update_check")),
                 self._on_update_click,
             ),
             MenuItem(
@@ -487,6 +489,10 @@ class TrayApp:
         self._pending_update = {"version": version, "url": download_url}
         logger.info(f"Update available: v{version}")
         if self._icon:
+            try:
+                self._icon.update_menu()
+            except Exception:
+                pass
             self._icon.notify(
                 t("notify.update_available", version=version),
                 "Groq Dictation",

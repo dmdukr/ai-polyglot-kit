@@ -36,6 +36,14 @@ _STRINGS: dict[str, dict[str, str]] = {
         "en": "Open Logs",
         "uk": "Відкрити логи",
     },
+    "tray.update_install": {
+        "en": "Install update v{version}",
+        "uk": "Встановити оновлення v{version}",
+    },
+    "tray.update_check": {
+        "en": "Check for updates",
+        "uk": "Перевірити оновлення",
+    },
     "tray.quit": {
         "en": "Quit",
         "uk": "Вихід",
