@@ -45,10 +45,18 @@ System-wide dictation for Windows using Groq Whisper API with AI-powered text no
 
 1. Download `GroqDictation-X.X.X-setup.exe` from [Releases](https://github.com/dmdukr/groq-dictation/releases)
 2. Run the installer
-3. Get a free API key at [console.groq.com](https://console.groq.com)
-4. On first launch, enter your API key in the settings window
+3. Get a free Groq API key (see [step-by-step guide](#getting-a-groq-api-key) below)
+4. On first launch, right-click the tray icon → **Settings** → paste your API key
 
-### Option 2: From source
+> **Updating**: The app checks for new versions automatically. When an update is available, you'll see a notification — click to download and install. Your settings and profile are preserved.
+>
+> **Uninstalling**: Use Windows **Settings → Apps → Groq Dictation → Uninstall**, or run the uninstaller from the install directory.
+
+### Option 2: Portable
+
+Download `GroqDictation.exe` from [Releases](https://github.com/dmdukr/groq-dictation/releases) — no installation needed, runs from any folder.
+
+### Option 3: From source
 
 ```bash
 git clone https://github.com/dmdukr/groq-dictation.git
@@ -58,6 +66,19 @@ python -m venv .venv
 pip install -r requirements.txt
 python -m src.main
 ```
+
+## Getting a Groq API key
+
+Groq provides a **free API** for Whisper speech recognition and LLM text processing.
+
+1. Go to [console.groq.com](https://console.groq.com)
+2. Click **Sign Up** (Google, GitHub, or email)
+3. After login, go to **API Keys** in the left menu
+4. Click **Create API Key**
+5. Copy the key (starts with `gsk_...`)
+6. In Groq Dictation: right-click tray icon → **Settings** → paste into **API Key** field → **Save**
+
+> **Free tier limits**: ~14,400 audio seconds/day for Whisper, ~14,400 requests/day for LLM. More than enough for personal use.
 
 ## Configuration
 
@@ -73,6 +94,7 @@ Right-click the tray icon → **Settings** to open the configuration window.
 | `hotkey` | Hold-to-record hotkey | `f12` |
 | `audio.mic_device_index` | Microphone device index (null = auto) | `null` |
 | `normalization.enabled` | Enable AI post-processing | `true` |
+| `telemetry.enabled` | Send anonymous usage statistics | `true` |
 
 ## Usage
 
@@ -194,10 +216,18 @@ Please include:
 
 1. Завантажте `GroqDictation-X.X.X-setup.exe` з [Releases](https://github.com/dmdukr/groq-dictation/releases)
 2. Запустіть інсталятор
-3. Отримайте безкоштовний API ключ на [console.groq.com](https://console.groq.com)
-4. При першому запуску введіть API ключ у вікні налаштувань
+3. Отримайте безкоштовний Groq API ключ (див. [інструкцію](#отримання-groq-api-ключа) нижче)
+4. При першому запуску: правий клік на іконку в треї → **Settings** → вставте API ключ
 
-### Варіант 2: З вихідного коду
+> **Оновлення**: Програма автоматично перевіряє нові версії. При наявності оновлення ви побачите сповіщення — натисніть для завантаження та встановлення. Налаштування та профіль зберігаються.
+>
+> **Видалення**: Windows **Параметри → Програми → Groq Dictation → Видалити**.
+
+### Варіант 2: Портативна версія
+
+Завантажте `GroqDictation.exe` з [Releases](https://github.com/dmdukr/groq-dictation/releases) — без інсталяції, запускається з будь-якої папки.
+
+### Варіант 3: З вихідного коду
 
 ```bash
 git clone https://github.com/dmdukr/groq-dictation.git
@@ -208,11 +238,24 @@ pip install -r requirements.txt
 python -m src.main
 ```
 
+## Отримання Groq API ключа
+
+Groq надає **безкоштовний API** для розпізнавання мовлення Whisper та LLM обробки тексту.
+
+1. Перейдіть на [console.groq.com](https://console.groq.com)
+2. Натисніть **Sign Up** (Google, GitHub або email)
+3. Після входу перейдіть в **API Keys** у лівому меню
+4. Натисніть **Create API Key**
+5. Скопіюйте ключ (починається з `gsk_...`)
+6. У Groq Dictation: правий клік на іконку → **Settings** → вставте у поле **API Key** → **Save**
+
+> **Безкоштовний план**: ~14 400 секунд аудіо/день для Whisper, ~14 400 запитів/день для LLM. Більш ніж достатньо для особистого використання.
+
 ## Використання
 
 | Дія | Як |
 |-----|-----|
-| **Запис** | Утримуйте гарячу клавішу (за замовчуванням: `Alt Gr`) — говоріть — відпустіть |
+| **Запис** | Утримуйте гарячу клавішу (за замовчуванням: `F12`) — говоріть — відпустіть |
 | **Зворотній зв'язок** | Після введення тексту відредагуйте його, потім двічі натисніть гарячу клавішу |
 | **Налаштування** | Правий клік на іконку в треї → Settings |
 | **Профіль** | Правий клік на іконку в треї → Open Profile |

@@ -89,13 +89,16 @@ class Updater:
                         "Downloaded %d bytes to %s", downloaded, installer_path
                     )
 
-            # Launch installer and exit
+            # Launch installer and terminate self
             logger.info("Launching installer: %s", installer_path)
             subprocess.Popen(
                 [str(installer_path), "/SILENT"],
                 creationflags=subprocess.DETACHED_PROCESS,
             )
-            return True
+            # Give installer a moment to start, then exit
+            logger.info("Exiting for update...")
+            import os
+            os._exit(0)
 
         except Exception as e:
             logger.error("Update download failed: %s", e)

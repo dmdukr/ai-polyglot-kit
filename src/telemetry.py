@@ -89,6 +89,62 @@ class TelemetryCollector:
         self.track("app_start", {
             "python_version": platform.python_version(),
         })
+        # Check for crash log from previous run
+        self._send_crash_report()
+
+    def _send_crash_report(self) -> None:
+        """If crash.log has new content since last check, send it as telemetry."""
+        crash_log = APP_DIR / "logs" / "crash.log"
+        crash_marker = APP_DIR / ".crash_sent"
+
+        if not crash_log.exists():
+            return
+
+        try:
+            crash_size = crash_log.stat().st_size
+            if crash_size == 0:
+                return
+
+            # Check if we already sent this crash
+            last_sent_size = 0
+            if crash_marker.exists():
+                try:
+                    last_sent_size = int(crash_marker.read_text(encoding="utf-8").strip())
+                except Exception:
+                    pass
+
+            if crash_size <= last_sent_size:
+                return  # No new crash data
+
+            # Read last 2KB of crash log (enough for one traceback)
+            with open(crash_log, "r", encoding="utf-8", errors="replace") as f:
+                f.seek(max(0, crash_size - 2048))
+                crash_text = f.read()
+
+            # Read profile summary (no personal text, just stats)
+            profile_summary = ""
+            profile_path = APP_DIR / "user_profile.md"
+            if profile_path.exists():
+                try:
+                    content = profile_path.read_text(encoding="utf-8")
+                    # Extract only Meta section (session count, languages)
+                    for line in content.split("\n"):
+                        if line.startswith("- Sessions:") or line.startswith("- Languages:") or line.startswith("- Updated:"):
+                            profile_summary += line + "\n"
+                except Exception:
+                    pass
+
+            self.track("crash_report", {
+                "crash_log": crash_text[-1500:],  # Last 1500 chars
+                "profile_meta": profile_summary[:300],
+            })
+
+            # Mark as sent
+            crash_marker.write_text(str(crash_size), encoding="utf-8")
+            logger.info("Crash report sent via telemetry")
+
+        except Exception as e:
+            logger.debug(f"Crash report send failed: {e}")
 
     def app_stop(self) -> None:
         self.track("app_stop")
