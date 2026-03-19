@@ -63,6 +63,21 @@ def main() -> None:
             pass
         sys.exit(0)
 
+    # Cleanup stale PyInstaller _MEI* temp dirs
+    if getattr(sys, "frozen", False):
+        try:
+            import shutil
+            tmp = Path(tempfile.gettempdir())
+            my_mei = Path(sys._MEIPASS).name if hasattr(sys, "_MEIPASS") else ""
+            for d in tmp.glob("_MEI*"):
+                if d.is_dir() and d.name != my_mei:
+                    try:
+                        shutil.rmtree(d, ignore_errors=True)
+                    except Exception:
+                        pass
+        except Exception:
+            pass
+
     # Enable faulthandler for segfault debugging
     _fault_log = APP_DIR / "logs" / "crash.log"
     _fault_log.parent.mkdir(parents=True, exist_ok=True)

@@ -1,6 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 """PyInstaller spec for Groq Dictation."""
 
+import os
 import sys
 from pathlib import Path
 
@@ -75,7 +76,7 @@ exe = EXE(
     strip=False,
     upx=True,
     upx_exclude=[],
-    runtime_tmpdir=None,
+    runtime_tmpdir=os.path.join(os.environ.get('LOCALAPPDATA', ''), 'GroqDictation', '_runtime'),
     console=False,  # windowed (no console)
     disable_windowed_traceback=False,
     argv_emulation=False,

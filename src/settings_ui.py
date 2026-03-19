@@ -1,20 +1,58 @@
 """Settings GUI window using tkinter."""
 
 import logging
+import sys
 import threading
 import tkinter as tk
+import winreg
 from tkinter import ttk, messagebox
 from pathlib import Path
 
 import yaml
 
-from .config import AppConfig, AudioConfig
+from .config import AppConfig, AudioConfig, APP_NAME
 from .audio_capture import AudioCapture
 from .i18n import t
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config.yaml"
+
+_REG_RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
+
+
+def _get_autostart() -> bool:
+    """Check if app is in Windows startup registry."""
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _REG_RUN_KEY, 0, winreg.KEY_READ) as key:
+            winreg.QueryValueEx(key, APP_NAME)
+            return True
+    except FileNotFoundError:
+        return False
+    except Exception:
+        return False
+
+
+def _set_autostart(enabled: bool) -> None:
+    """Add or remove app from Windows startup registry."""
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _REG_RUN_KEY, 0, winreg.KEY_SET_VALUE) as key:
+            if enabled:
+                # Use the exe path if frozen, otherwise pythonw -m src.main
+                if getattr(sys, "frozen", False):
+                    exe_path = sys.executable
+                else:
+                    exe_path = f'"{sys.executable}" -m src.main'
+                winreg.SetValueEx(key, APP_NAME, 0, winreg.REG_SZ, f'"{exe_path}"')
+                logger.info(f"Autostart enabled: {exe_path}")
+            else:
+                try:
+                    winreg.DeleteValue(key, APP_NAME)
+                    logger.info("Autostart disabled")
+                except FileNotFoundError:
+                    pass
+    except Exception as e:
+        logger.warning(f"Failed to set autostart: {e}")
 
 
 class SettingsWindow:
@@ -198,12 +236,16 @@ class SettingsWindow:
         ttk.Checkbutton(tab_dict, text="Show tray notifications",
                         variable=self._notif_var).grid(row=8, column=0, columnspan=2, sticky="w", pady=2)
 
-        ttk.Label(tab_dict, text=t("settings.ui_language")).grid(row=9, column=0, sticky="w", pady=(12, 4))
+        self._autostart_var = tk.BooleanVar(master=self._window, value=_get_autostart())
+        ttk.Checkbutton(tab_dict, text=t("settings.autostart"),
+                        variable=self._autostart_var).grid(row=9, column=0, columnspan=2, sticky="w", pady=2)
+
+        ttk.Label(tab_dict, text=t("settings.ui_language")).grid(row=10, column=0, sticky="w", pady=(12, 4))
         self._ui_lang_var = tk.StringVar(master=self._window, value=self._config.ui.language)
         ui_lang_combo = ttk.Combobox(tab_dict, textvariable=self._ui_lang_var, width=15, values=[
             "uk", "en",
         ], state="readonly")
-        ui_lang_combo.grid(row=9, column=1, sticky="w", padx=(8, 0), pady=(12, 4))
+        ui_lang_combo.grid(row=10, column=1, sticky="w", padx=(8, 0), pady=(12, 4))
 
         tab_dict.columnconfigure(1, weight=1)
 
@@ -405,6 +447,9 @@ class SettingsWindow:
 
         # Telemetry
         self._config.telemetry.enabled = self._telemetry_var.get()
+
+        # Autostart
+        _set_autostart(self._autostart_var.get())
 
         # Normalization
         self._config.normalization.prompt = self._prompt_text.get("1.0", "end").strip()

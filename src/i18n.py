@@ -176,6 +176,10 @@ _STRINGS: dict[str, dict[str, str]] = {
         "en": "Only counters and model names are sent. No text, audio, or personal data.",
         "uk": "Надсилаються лише лічильники та назви моделей. Без тексту, аудіо чи особистих даних.",
     },
+    "settings.autostart": {
+        "en": "Start with Windows",
+        "uk": "Запускати з Windows",
+    },
 
     # ── Overlay ──────────────────────────────────────────────────
     "overlay.rec": {
