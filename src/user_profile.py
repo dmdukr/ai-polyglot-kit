@@ -582,6 +582,15 @@ class UserProfile:
                     entry["source"] = "feedback"
                     logger.info("Feedback: '%s' → '%s' (count=%d)", raw_w, norm_w, entry["count"])
 
+                    # Also boost corrected terms in vocabulary (user-confirmed terms)
+                    vocab_fb = self._data.setdefault("vocabulary", {})
+                    for term in _extract_vocabulary(norm_w):
+                        v_entry = vocab_fb.setdefault(term, {"count": 0})
+                        v_entry["count"] = max(v_entry.get("count", 0), 10)  # high priority
+                        v_entry["last_seen"] = today
+                        v_entry["source"] = "feedback"
+                        logger.info("Term learned from feedback: '%s'", term)
+
             # Vocabulary
             vocab = self._data.setdefault("vocabulary", {})
             for word in _extract_vocabulary(normalized_text):
@@ -717,26 +726,57 @@ class UserProfile:
                     parts.append(line)
                     budget -= len(line) + 1
 
-            # 3. Top terms within remaining budget
+            # 3. User-confirmed domain terms (from feedback) — highest term priority
             if budget > 20:
                 vocab = self._data.get("vocabulary", {})
                 nouns = self._data.get("proper_nouns", {})
-                all_terms = [(w, e.get("count", 0)) for w, e in vocab.items()]
-                all_terms += [(n, e.get("count", 0)) for n, e in nouns.items()]
-                all_terms.sort(key=lambda x: x[1], reverse=True)
+
+                # Split: feedback terms vs auto-detected
+                feedback_terms = []
+                auto_terms = []
+                for w, e in vocab.items():
+                    if e.get("source") == "feedback":
+                        feedback_terms.append((w, e.get("count", 0)))
+                    else:
+                        auto_terms.append((w, e.get("count", 0)))
+                auto_terms += [(n, e.get("count", 0)) for n, e in nouns.items()]
+
+                feedback_terms.sort(key=lambda x: x[1], reverse=True)
+                auto_terms.sort(key=lambda x: x[1], reverse=True)
+
                 seen: set[str] = set()
-                section = "TERMS: "
-                items = []
-                for term, _ in all_terms:
-                    if term.lower() in seen:
-                        continue
-                    seen.add(term.lower())
-                    candidate = section + ", ".join(items + [term])
-                    if len(candidate) > budget:
-                        break
-                    items.append(term)
-                if items:
-                    parts.append(section + ", ".join(items))
+
+                # Feedback terms first — these are user-confirmed, must be preserved
+                if feedback_terms:
+                    section = "DOMAIN TERMS (always use exactly): "
+                    items = []
+                    for term, _ in feedback_terms:
+                        if term.lower() in seen:
+                            continue
+                        seen.add(term.lower())
+                        candidate = section + ", ".join(items + [term])
+                        if len(candidate) > budget:
+                            break
+                        items.append(term)
+                    if items:
+                        line = section + ", ".join(items)
+                        parts.append(line)
+                        budget -= len(line) + 1
+
+                # Auto terms in remaining budget
+                if auto_terms and budget > 20:
+                    section = "TERMS: "
+                    items = []
+                    for term, _ in auto_terms:
+                        if term.lower() in seen:
+                            continue
+                        seen.add(term.lower())
+                        candidate = section + ", ".join(items + [term])
+                        if len(candidate) > budget:
+                            break
+                        items.append(term)
+                    if items:
+                        parts.append(section + ", ".join(items))
 
         return "\n".join(parts)
 
