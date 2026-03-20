@@ -283,6 +283,11 @@ class TrayApp:
                 self._on_restart_click,
             ),
             MenuItem(
+                t("tray.about"),
+                self._on_about_click,
+            ),
+            Menu.SEPARATOR,
+            MenuItem(
                 t("tray.quit"),
                 self._on_quit_click,
             ),
@@ -528,6 +533,27 @@ class TrayApp:
         subprocess.Popen([sys.executable, "-m", "src"], cwd=str(Path(__file__).parent.parent))
         if self._icon:
             self._icon.stop()
+
+    def _on_about_click(self, _icon=None, _item=None) -> None:
+        """Show About dialog."""
+        from .config import APP_VERSION
+        import tkinter as tk
+        from tkinter import messagebox
+
+        def _show():
+            root = tk.Tk()
+            root.withdraw()
+            root.attributes("-topmost", True)
+            messagebox.showinfo(
+                t("tray.about"),
+                f"Groq Dictation v{APP_VERSION}\n\n"
+                f"Author: Dmytro Dubinko\n"
+                f"License: GPL-3.0\n\n"
+                f"github.com/dmdukr/groq-dictation",
+            )
+            root.destroy()
+
+        threading.Thread(target=_show, daemon=True).start()
 
     def _on_quit_click(self, _icon=None, _item=None) -> None:
         """Quit the application — full process exit."""
