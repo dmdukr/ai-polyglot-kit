@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
 
 #define MyAppName "Groq Dictation"
-#define MyAppVersion "1.4.2"
+#define MyAppVersion "1.4.3"
 #define MyAppPublisher "dmdukr"
 #define MyAppURL "https://github.com/dmdukr/groq-dictation"
 #define MyAppExeName "GroqDictation.exe"
@@ -53,10 +53,17 @@ Filename: "taskkill"; Parameters: "/F /IM {#MyAppExeName}"; Flags: runhidden; Ru
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ResultCode: Integer;
+  RuntimeDir: String;
 begin
   if CurStep = ssInstall then
   begin
     // Kill running instance before install
     Exec('taskkill', '/F /IM ' + '{#MyAppExeName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    // Wait for process to fully exit and release file locks
+    Sleep(2000);
+    // Clean up PyInstaller runtime temp dir
+    RuntimeDir := ExpandConstant('{localappdata}\GroqDictation\_runtime');
+    if DirExists(RuntimeDir) then
+      DelTree(RuntimeDir, True, True, True);
   end;
 end;
