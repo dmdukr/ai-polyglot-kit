@@ -301,6 +301,16 @@ _STRINGS: dict[str, dict[str, str]] = {
         "en": "REC",
         "uk": "ЗАП",
     },
+
+    # ── Translate ─────────────────────────────────────────────
+    "translate.loading": {
+        "en": "Translating...",
+        "uk": "Перекладаю...",
+    },
+    "translate.copied": {
+        "en": "Copied to clipboard",
+        "uk": "Скопійовано в буфер",
+    },
 }
 
 # Current language

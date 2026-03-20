@@ -8,12 +8,14 @@ from pathlib import Path
 from typing import Callable
 
 import keyboard
+import pyperclip
 from PIL import Image, ImageDraw
 from pystray import Icon, Menu, MenuItem
 
 from .config import AppConfig
 from .engine import DictationEngine, DictationState
 from .i18n import t
+from .translate_overlay import TranslateOverlay
 from .updater import Updater
 
 logger = logging.getLogger(__name__)
@@ -95,6 +97,10 @@ class TrayApp:
         self._updater = Updater(on_update_available=self._on_update_available)
         self._pending_update: dict | None = None
 
+        # Quick translate (double Ctrl+C)
+        self._translator = TranslateOverlay(config.groq)
+        self._last_ctrl_c_time: float = 0
+
     def run(self) -> None:
         """Run the tray app. Blocks the main thread."""
         self._icon = Icon(
@@ -112,6 +118,9 @@ class TrayApp:
 
         # Register hotkeys
         self._register_hotkeys()
+
+        # Register double Ctrl+C for quick translate
+        keyboard.add_hotkey("ctrl+c", self._on_ctrl_c, suppress=False)
 
         # Select mic device (but don't open stream — opened on demand at key press)
         import threading
@@ -488,6 +497,31 @@ class TrayApp:
                 subprocess.Popen(["notepad.exe", str(PROFILE_PATH)])
         except Exception as e:
             logger.error(f"Failed to open profile: {e}")
+
+    def _on_ctrl_c(self) -> None:
+        """Handle Ctrl+C — detect double press for quick translate."""
+        now = time.monotonic()
+        gap = now - self._last_ctrl_c_time
+        self._last_ctrl_c_time = now
+
+        if gap < 0.5:
+            # Double Ctrl+C detected — translate clipboard
+            self._last_ctrl_c_time = 0  # reset to avoid triple trigger
+            logger.info("Double Ctrl+C — opening translator")
+
+            # Small delay for clipboard to update from first Ctrl+C
+            def _do_translate():
+                time.sleep(0.1)
+                try:
+                    text = pyperclip.paste()
+                    if text and text.strip():
+                        self._translator.show(text)
+                    else:
+                        logger.info("Clipboard empty, skipping translate")
+                except Exception as e:
+                    logger.warning(f"Translate failed: {e}")
+
+            threading.Thread(target=_do_translate, daemon=True).start()
 
     def _on_update_available(self, version: str, download_url: str) -> None:
         """Called by Updater when a new version is found."""
