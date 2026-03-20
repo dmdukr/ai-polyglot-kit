@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 # Default paths
-APP_VERSION = "1.4.1"
+APP_VERSION = "1.4.2"
 APP_NAME = "GroqDictation"
 GITHUB_REPO = "dmdukr/groq-dictation"  # owner/repo for auto-update
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME

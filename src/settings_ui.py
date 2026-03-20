@@ -267,14 +267,14 @@ class SettingsWindow:
 
         self._autostart_var = tk.BooleanVar(master=self._window, value=_get_autostart())
         ttk.Checkbutton(tab_dict, text=t("settings.autostart"),
-                        variable=self._autostart_var).grid(row=9, column=0, columnspan=2, sticky="w", pady=2)
+                        variable=self._autostart_var).grid(row=10, column=0, columnspan=2, sticky="w", pady=2)
 
-        ttk.Label(tab_dict, text=t("settings.ui_language")).grid(row=10, column=0, sticky="w", pady=(12, 4))
+        ttk.Label(tab_dict, text=t("settings.ui_language")).grid(row=11, column=0, sticky="w", pady=(12, 4))
         self._ui_lang_var = tk.StringVar(master=self._window, value=self._config.ui.language)
         ui_lang_combo = ttk.Combobox(tab_dict, textvariable=self._ui_lang_var, width=15, values=[
             "uk", "en",
         ], state="readonly")
-        ui_lang_combo.grid(row=10, column=1, sticky="w", padx=(8, 0), pady=(12, 4))
+        ui_lang_combo.grid(row=11, column=1, sticky="w", padx=(8, 0), pady=(12, 4))
 
         tab_dict.columnconfigure(1, weight=1)
 
