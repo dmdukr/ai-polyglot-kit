@@ -72,6 +72,16 @@ class Updater:
             download_dir.mkdir(parents=True, exist_ok=True)
             installer_path = download_dir / filename
 
+            # Remove old download if exists (avoids Permission denied)
+            if installer_path.exists():
+                try:
+                    installer_path.unlink()
+                    logger.info("Removed old update file: %s", installer_path)
+                except OSError:
+                    # File locked — use unique name
+                    installer_path = download_dir / f"GroqDictation_{int(time.time())}.exe"
+                    logger.info("Old file locked, using: %s", installer_path)
+
             logger.info("Downloading update: %s", download_url)
 
             with httpx.Client(timeout=120.0, follow_redirects=True) as client:
@@ -89,13 +99,14 @@ class Updater:
                         "Downloaded %d bytes to %s", downloaded, installer_path
                     )
 
-            # Launch installer and terminate self
+            # Launch installer (Inno Setup) silently — it will kill our process,
+            # replace the exe, and restart the app
             logger.info("Launching installer: %s", installer_path)
             subprocess.Popen(
-                [str(installer_path), "/SILENT"],
-                creationflags=subprocess.DETACHED_PROCESS,
+                [str(installer_path), "/SILENT", "/SUPPRESSMSGBOXES"],
+                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
             )
-            # Give installer a moment to start, then exit
+
             logger.info("Exiting for update...")
             import os
             os._exit(0)
