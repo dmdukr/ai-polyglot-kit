@@ -150,42 +150,59 @@ class AudioCapture:
     def list_devices(self) -> list[AudioDevice]:
         """Enumerate real input audio devices (filtered, no duplicates).
 
-        Shows only MME devices (hostApi=0) which are the standard Windows
-        audio devices. Skips virtual/system entries like Sound Mapper,
-        Primary Sound Capture Driver, Stereo Mix.
+        Prefers MME devices (hostApi=0), but also includes WASAPI/WDM-KS
+        devices (Bluetooth headsets) that have no MME counterpart.
+        Skips virtual/system entries.
         """
         self.refresh_devices()  # re-scan for new devices
         pa = self._ensure_pa()
-        devices: list[AudioDevice] = []
 
         # Substrings to skip (system virtual devices, not real microphones)
         skip_substrings = [
             "sound mapper",
             "primary sound",
             "stereo mix",
+            "pc speaker",
         ]
+
+        # Collect all input devices grouped by hostApi
+        mme_devices: list[AudioDevice] = []
+        other_devices: list[AudioDevice] = []
 
         for i in range(pa.get_device_count()):
             info = pa.get_device_info_by_index(i)
             max_input_ch = int(info.get("maxInputChannels", 0))
             if max_input_ch < 1:
                 continue
-            # Only show MME devices (hostApi=0) to avoid duplicates
-            if int(info.get("hostApi", -1)) != 0:
-                continue
             name = str(info["name"])
-            # Skip virtual/system devices
             name_lower = name.lower()
             if any(s in name_lower for s in skip_substrings):
                 continue
-            devices.append(
-                AudioDevice(
-                    index=i,
-                    name=name,
-                    channels=max_input_ch,
-                    default_sample_rate=float(info["defaultSampleRate"]),
-                )
+
+            device = AudioDevice(
+                index=i,
+                name=name,
+                channels=max_input_ch,
+                default_sample_rate=float(info["defaultSampleRate"]),
             )
+
+            host_api = int(info.get("hostApi", -1))
+            if host_api == 0:  # MME
+                mme_devices.append(device)
+            else:
+                other_devices.append(device)
+
+        # Start with MME devices (preferred, no duplicates)
+        devices = list(mme_devices)
+        mme_names = {d.name.lower()[:20] for d in mme_devices}
+
+        # Add non-MME devices that have no MME counterpart (e.g. Bluetooth)
+        for d in other_devices:
+            short_name = d.name.lower()[:20]
+            if short_name not in mme_names:
+                devices.append(d)
+                mme_names.add(short_name)  # prevent further duplicates
+
         return devices
 
     def select_device(self, index: int | None) -> AudioDevice | None:
