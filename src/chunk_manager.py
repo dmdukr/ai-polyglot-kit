@@ -61,6 +61,9 @@ class ChunkManager:
         self._consecutive_silence: int = 0
         self._has_speech: bool = False  # at least one speech frame detected
 
+        # Skip first ~150ms to avoid key click / mic warmup noise
+        self._warmup_skip = 5  # frames to discard at start (5 × 30ms = 150ms)
+
         logger.info(
             "ChunkManager: frame=%d ms, silence=%d frames (%d ms), "
             "min=%d frames, max=%d frames",
@@ -124,6 +127,11 @@ class ChunkManager:
                 continue
 
             if len(frame) != self._frame_bytes:
+                continue
+
+            # Skip warmup frames (key click / mic noise)
+            if self._warmup_skip > 0:
+                self._warmup_skip -= 1
                 continue
 
             is_speech = self._vad.is_speech(frame, self._cfg.sample_rate)
