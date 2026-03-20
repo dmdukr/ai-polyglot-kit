@@ -99,12 +99,12 @@ class Updater:
                         "Downloaded %d bytes to %s", downloaded, installer_path
                     )
 
-            # Launch installer (Inno Setup) silently — it will kill our process,
-            # replace the exe, and restart the app
+            # Launch installer (Inno Setup) — no /SILENT because SmartScreen
+            # blocks unsigned silent installs. User sees normal Inno Setup UI.
             logger.info("Launching installer: %s", installer_path)
             subprocess.Popen(
-                [str(installer_path), "/SILENT", "/SUPPRESSMSGBOXES"],
-                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
+                [str(installer_path)],
+                creationflags=subprocess.DETACHED_PROCESS,
             )
 
             logger.info("Exiting for update...")
