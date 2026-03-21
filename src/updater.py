@@ -85,7 +85,6 @@ class Updater:
             with httpx.Client(timeout=120.0, follow_redirects=True) as client:
                 with client.stream("GET", download_url) as resp:
                     resp.raise_for_status()
-                    total = int(resp.headers.get("content-length", 0))
                     downloaded = 0
 
                     with open(installer_path, "wb") as f:
@@ -105,7 +104,6 @@ class Updater:
             )
 
             logger.info("Exiting for update...")
-            import os
             os._exit(0)
 
         except Exception as e:

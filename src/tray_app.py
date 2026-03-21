@@ -123,7 +123,6 @@ class TrayApp:
         keyboard.add_hotkey("ctrl+c", self._on_ctrl_c, suppress=False)
 
         # Select mic device (but don't open stream — opened on demand at key press)
-        import threading
         def _init_mic():
             try:
                 ac = self._engine.get_audio_capture()
@@ -400,11 +399,9 @@ class TrayApp:
 
     def _start_device_watcher(self) -> None:
         """Periodically check for new headset/bluetooth devices and notify user."""
-        import threading
 
         def _watch():
             while True:
-                import time
                 time.sleep(10)  # check every 10 seconds
                 try:
                     ac = self._engine.get_audio_capture()
@@ -428,8 +425,8 @@ class TrayApp:
                 except Exception as e:
                     logger.debug(f"Device watcher error: {e}")
 
-        t = threading.Thread(target=_watch, name="DeviceWatcher", daemon=True)
-        t.start()
+        watcher_thread = threading.Thread(target=_watch, name="DeviceWatcher", daemon=True)
+        watcher_thread.start()
         logger.info("Device watcher started (10s interval)")
 
     def _on_suppress_ptt(self, suppress: bool) -> None:
@@ -556,7 +553,8 @@ class TrayApp:
 
     def _on_restart_click(self, _icon=None, _item=None) -> None:
         """Restart the application (re-exec the process)."""
-        import subprocess, sys
+        import subprocess
+        import sys
         from .main import release_single_instance
         logger.info("Restarting application...")
         self._engine.shutdown()
@@ -599,5 +597,4 @@ class TrayApp:
         if self._icon:
             self._icon.stop()
         # Force exit to ensure all threads are killed
-        import os
         os._exit(0)

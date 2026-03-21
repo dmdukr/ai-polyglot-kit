@@ -97,6 +97,9 @@ class TranslateOverlay:
             return
         self._source_text = text.strip()
         self.hide()
+        # Wait for previous window to fully close
+        if self._thread and self._thread.is_alive():
+            self._thread.join(timeout=1.0)
         self._thread = threading.Thread(target=self._build_and_run, daemon=True)
         self._thread.start()
 
@@ -254,8 +257,8 @@ class TranslateOverlay:
             result_text.pack(fill="both", expand=True)
 
             # ── Status bar ──────────────────────────────────────────
-            status_frame = tk.Frame(root, bg=BG_PAGE, padx=16, pady=(0, 8))
-            status_frame.pack(fill="x")
+            status_frame = tk.Frame(root, bg=BG_PAGE, padx=16)
+            status_frame.pack(fill="x", pady=(0, 8))
 
             status_var = tk.StringVar(value="")
             tk.Label(
@@ -332,13 +335,14 @@ class TranslateOverlay:
 
                         root.after(0, _update)
 
-                    except Exception as e:
-                        logger.error(f"Translation failed: {e}")
+                    except Exception as exc:
+                        logger.error("Translation failed: %s", exc)
+                        err_msg = str(exc)
 
-                        def _error():
+                        def _error(msg=err_msg):
                             result_text.config(state="normal")
                             result_text.delete("1.0", "end")
-                            result_text.insert("1.0", f"Error: {e}")
+                            result_text.insert("1.0", f"Error: {msg}")
                             result_text.config(state="disabled")
                             status_var.set("Failed")
 

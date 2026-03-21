@@ -132,7 +132,7 @@ class GroqSTT:
 
         if "," in lang:
             # Multiple languages selected
-            lang_codes = [l.strip() for l in lang.split(",") if l.strip()]
+            lang_codes = [lc.strip() for lc in lang.split(",") if lc.strip()]
             # Map codes to language names for Whisper prompt
             lang_names = {
                 "uk": "Українська", "ru": "Русский", "en": "English",
@@ -313,7 +313,7 @@ class GroqSTT:
                 logger.error("Cannot connect to Groq API: %s", exc)
                 return None
 
-            except Exception as exc:
+            except Exception:
                 logger.exception("Unexpected error calling Groq API")
                 return None
 

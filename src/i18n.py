@@ -200,10 +200,6 @@ _STRINGS: dict[str, dict[str, str]] = {
         "en": "Show key",
         "uk": "Показати ключ",
     },
-    "settings.mic_device": {
-        "en": "Microphone:",
-        "uk": "Мікрофон:",
-    },
     "settings.mic_auto": {
         "en": "Auto (loudest)",
         "uk": "Авто (найгучніший)",

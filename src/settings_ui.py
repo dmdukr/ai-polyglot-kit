@@ -169,7 +169,7 @@ class SettingsWindow:
         # Parse current language config (comma-separated or single)
         current_langs = set()
         if self._config.groq.stt_language:
-            current_langs = {l.strip() for l in self._config.groq.stt_language.split(",")}
+            current_langs = {lc.strip() for lc in self._config.groq.stt_language.split(",")}
 
         self._lang_vars: dict[str, tk.BooleanVar] = {}
         for i, (code, name) in enumerate(self._all_languages):

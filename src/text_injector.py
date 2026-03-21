@@ -90,7 +90,6 @@ class TextInjector:
 
             VK_SHIFT = 0x10
             VK_CONTROL = 0x11
-            VK_LEFT = 0x25
             VK_RIGHT = 0x27
             VK_C = 0x43
 
