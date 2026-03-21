@@ -40,15 +40,15 @@ Speech-to-text providers for voice recognition. Add up to 3 in Settings → STT 
 
 *Data as of March 2026*
 
-| # | Provider | Model | Free Tier | Languages | WER | How to Get API Key |
-|---|----------|-------|-----------|-----------|-----|-------------------|
-| 1 | **Groq** | Whisper Large V3 Turbo | **~8 h/day** (daily reset) | 99+ | 0.16% | [console.groq.com](https://console.groq.com) → Sign Up → API Keys → Create |
-| 2 | **Soniox** | stt-async-v4 | **$200 credit ≈ 2000 h** (one-time) | 60+ | Top benchmark | [soniox.com](https://soniox.com) → Sign Up → Dashboard → API Key |
-| 3 | **Deepgram** | Nova-3 | **$200 credit ≈ 330 h** (one-time) | 50+ | 0.14% | [console.deepgram.com](https://console.deepgram.com) → Sign Up → API Keys |
-| 4 | **Gladia** | Solaria-1 | **10 h/month** + $50 credit | 100+ | 0.16% | [app.gladia.io](https://app.gladia.io) → Sign Up → API Key |
-| 5 | **Speechmatics** | Enhanced (Ursa) | **8 h/month** | 50+ | 0.18% | [portal.speechmatics.com](https://portal.speechmatics.com) → Sign Up → API Key |
-| 6 | **AssemblyAI** | Universal-2 | **8 h/month** | 99 | 0.20% | [assemblyai.com](https://www.assemblyai.com) → Sign Up → Dashboard → API Key |
-| 7 | **OpenAI** | Whisper, GPT-4o-transcribe | **No free tier** ($0.006/min) | 99+ | 0.11% | [platform.openai.com](https://platform.openai.com) → API Keys |
+| # | Provider | Model | WER | Free Tier | Languages | How to Get API Key |
+|---|----------|-------|-----|-----------|-----------|-------------------|
+| 1 | **OpenAI** | GPT-4o-transcribe | **0.11%** | No free tier ($0.006/min) | 99+ | [platform.openai.com](https://platform.openai.com) → API Keys |
+| 2 | **Deepgram** | Nova-3 | **0.14%** | $200 credit ≈ 330 h (one-time) | 50+ | [console.deepgram.com](https://console.deepgram.com) → Sign Up → API Keys |
+| 3 | **Groq** | Whisper Large V3 Turbo | **0.16%** | **~8 h/day** (daily reset) | 99+ | [console.groq.com](https://console.groq.com) → Sign Up → API Keys → Create |
+| 4 | **Gladia** | Solaria-1 | **0.16%** | 10 h/month + $50 credit | 100+ | [app.gladia.io](https://app.gladia.io) → Sign Up → API Key |
+| 5 | **Soniox** | stt-v4 | **top** | **$200 credit ≈ 2000 h** (one-time) | 60+ | [soniox.com](https://soniox.com) → Sign Up → Dashboard → API Key |
+| 6 | **Speechmatics** | Enhanced (Ursa) | **0.18%** | 8 h/month | 50+ | [portal.speechmatics.com](https://portal.speechmatics.com) → Sign Up → API Key |
+| 7 | **AssemblyAI** | Universal-2 | **0.20%** | 8 h/month | 99 | [assemblyai.com](https://www.assemblyai.com) → Sign Up → Dashboard → API Key |
 
 ### Which STT to choose?
 
@@ -61,9 +61,11 @@ Speech-to-text providers for voice recognition. Add up to 3 in Settings → STT 
 
 | Slot | Provider | Why |
 |------|----------|-----|
-| #1 | Groq | Best daily free limit (8 h/day) |
-| #2 | Soniox | 2000 h backup, great multilingual |
-| #3 | Deepgram | 330 h backup, Nova-3 accuracy |
+| #1 | Groq | Best **daily** free limit (8 h/day, resets every day) |
+| #2 | Deepgram | Better accuracy (WER 0.14%), 330 h one-time credit |
+| #3 | Soniox | Largest credit (2000 h), best mid-sentence language switching |
+
+> **Note**: By accuracy alone, Deepgram > Groq > Soniox. But Groq is #1 because its free limit **resets daily** — you'll never run out. Deepgram and Soniox credits are one-time.
 
 ---
 
@@ -191,15 +193,15 @@ Found a bug? [Open an issue](https://github.com/dmdukr/ai-polyglot-kit/issues)
 
 *Дані станом на березень 2026*
 
-| # | Провайдер | Модель | Безкоштовно | Мови | WER | Як отримати ключ |
-|---|-----------|--------|-------------|------|-----|-----------------|
-| 1 | **Groq** | Whisper Large V3 Turbo | **~8 год/день** (щоденне скидання) | 99+ | 0.16% | [console.groq.com](https://console.groq.com) → Sign Up → API Keys → Create |
-| 2 | **Soniox** | stt-async-v4 | **$200 кредитів ≈ 2000 год** (одноразово) | 60+ | Топ бенчмарків | [soniox.com](https://soniox.com) → Sign Up → Dashboard → API Key |
-| 3 | **Deepgram** | Nova-3 | **$200 кредитів ≈ 330 год** (одноразово) | 50+ | 0.14% | [console.deepgram.com](https://console.deepgram.com) → Sign Up → API Keys |
-| 4 | **Gladia** | Solaria-1 | **10 год/місяць** + $50 кредитів | 100+ | 0.16% | [app.gladia.io](https://app.gladia.io) → Sign Up → API Key |
-| 5 | **Speechmatics** | Enhanced (Ursa) | **8 год/місяць** | 50+ | 0.18% | [portal.speechmatics.com](https://portal.speechmatics.com) → Sign Up → API Key |
-| 6 | **AssemblyAI** | Universal-2 | **8 год/місяць** | 99 | 0.20% | [assemblyai.com](https://www.assemblyai.com) → Sign Up → Dashboard → API Key |
-| 7 | **OpenAI** | Whisper, GPT-4o-transcribe | **Немає безкоштовного** ($0.006/хв) | 99+ | 0.11% | [platform.openai.com](https://platform.openai.com) → API Keys |
+| # | Провайдер | Модель | WER | Безкоштовно | Мови | Як отримати ключ |
+|---|-----------|--------|-----|-------------|------|-----------------|
+| 1 | **OpenAI** | GPT-4o-transcribe | **0.11%** | Немає безкоштовного ($0.006/хв) | 99+ | [platform.openai.com](https://platform.openai.com) → API Keys |
+| 2 | **Deepgram** | Nova-3 | **0.14%** | $200 кредитів ≈ 330 год (одноразово) | 50+ | [console.deepgram.com](https://console.deepgram.com) → Sign Up → API Keys |
+| 3 | **Groq** | Whisper Large V3 Turbo | **0.16%** | **~8 год/день** (щоденне скидання) | 99+ | [console.groq.com](https://console.groq.com) → Sign Up → API Keys → Create |
+| 4 | **Gladia** | Solaria-1 | **0.16%** | 10 год/місяць + $50 кредитів | 100+ | [app.gladia.io](https://app.gladia.io) → Sign Up → API Key |
+| 5 | **Soniox** | stt-v4 | **топ** | **$200 кредитів ≈ 2000 год** (одноразово) | 60+ | [soniox.com](https://soniox.com) → Sign Up → Dashboard → API Key |
+| 6 | **Speechmatics** | Enhanced (Ursa) | **0.18%** | 8 год/місяць | 50+ | [portal.speechmatics.com](https://portal.speechmatics.com) → Sign Up → API Key |
+| 7 | **AssemblyAI** | Universal-2 | **0.20%** | 8 год/місяць | 99 | [assemblyai.com](https://www.assemblyai.com) → Sign Up → Dashboard → API Key |
 
 ### Який STT обрати?
 
@@ -212,9 +214,11 @@ Found a bug? [Open an issue](https://github.com/dmdukr/ai-polyglot-kit/issues)
 
 | Слот | Провайдер | Чому |
 |------|-----------|------|
-| #1 | Groq | Найкращий щоденний ліміт (8 год/день) |
-| #2 | Soniox | 2000 год запасу, відмінна мультимовність |
-| #3 | Deepgram | 330 год запасу, точність Nova-3 |
+| #1 | Groq | Найкращий **щоденний** ліміт (8 год/день, скидається кожен день) |
+| #2 | Deepgram | Краща точність (WER 0.14%), 330 год одноразового кредиту |
+| #3 | Soniox | Найбільший кредит (2000 год), найкраще перемикання мов mid-sentence |
+
+> **Примітка**: За точністю Deepgram > Groq > Soniox. Але Groq на #1 тому що його ліміт **скидається щодня** — він не закінчиться. Кредити Deepgram і Soniox — одноразові.
 
 ---
 
