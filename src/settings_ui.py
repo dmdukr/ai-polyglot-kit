@@ -97,9 +97,9 @@ class SettingsWindow:
     def _build_and_run(self) -> None:
         self._window = tk.Tk()
         self._window.title(t("settings.title"))
-        self._window.geometry("520x620")
+        self._window.geometry("560x720")
         self._window.resizable(True, True)
-        self._window.minsize(520, 500)
+        self._window.minsize(560, 600)
 
         # Center on screen
         self._window.update_idletasks()
@@ -441,11 +441,11 @@ class SettingsWindow:
 
         tab_tel.columnconfigure(0, weight=1)
 
-        # --- Buttons ---
+        # --- Buttons (fixed at bottom) ---
         btn_frame = ttk.Frame(self._window)
-        btn_frame.pack(fill="x", padx=8, pady=8)
+        btn_frame.pack(side="bottom", fill="x", padx=12, pady=12)
 
-        ttk.Button(btn_frame, text=t("settings.save"), command=self._save).pack(side="right", padx=4)
+        ttk.Button(btn_frame, text=t("settings.save"), command=self._save, style="Accent.TButton").pack(side="right", padx=4)
         ttk.Button(btn_frame, text=t("settings.cancel"), command=self._window.destroy).pack(side="right", padx=4)
 
         self._window.mainloop()
