@@ -97,13 +97,14 @@ class SettingsWindow:
     def _build_and_run(self) -> None:
         self._window = tk.Tk()
         self._window.title(t("settings.title"))
-        self._window.geometry("520x480")
-        self._window.resizable(False, False)
+        self._window.geometry("520x620")
+        self._window.resizable(True, True)
+        self._window.minsize(520, 500)
 
         # Center on screen
         self._window.update_idletasks()
         x = (self._window.winfo_screenwidth() - 520) // 2
-        y = (self._window.winfo_screenheight() - 480) // 2
+        y = (self._window.winfo_screenheight() - 620) // 2
         self._window.geometry(f"+{x}+{y}")
 
         # Always on top
