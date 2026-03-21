@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Default paths
 APP_VERSION = "4.0.0"
 APP_NAME = "AIPolyglotKit"
-GITHUB_REPO = "dmdukr/groq-dictation"  # owner/repo for auto-update (keep until repo renamed)
+GITHUB_REPO = "dmdukr/ai-polyglot-kit"
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME
 DEFAULT_CONFIG_PATH = Path("config.yaml")
 

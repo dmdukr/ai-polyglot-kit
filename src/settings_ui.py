@@ -13,7 +13,7 @@ import yaml
 from .config import AppConfig, APP_NAME
 from .audio_capture import AudioCapture
 from .i18n import t
-from .utils import set_dwm_dark_title_bar, detect_windows_theme, normalize_key_name, load_deepl_keys, save_translate_settings, load_translate_settings
+from .utils import set_dwm_dark_title_bar, detect_windows_theme, normalize_key_name, save_translate_settings, load_translate_settings
 
 logger = logging.getLogger(__name__)
 
@@ -98,9 +98,9 @@ class SettingsWindow:
     def _build_and_run(self) -> None:
         self._window = tk.Tk()
         self._window.title(t("settings.title"))
-        self._window.geometry("560x720")
+        self._window.geometry("740x750")
         self._window.resizable(True, True)
-        self._window.minsize(560, 600)
+        self._window.minsize(700, 650)
 
         # Center on screen
         self._window.update_idletasks()
@@ -196,119 +196,14 @@ class SettingsWindow:
         # --- Tab 3: Translation ---
         tab_trans = ttk.Frame(notebook, padding=8)
         notebook.add(tab_trans, text=f"  {t('settings.tab_translation')}  ")
-        self._trans_slots = self._build_provider_slots(tab_trans, self._config.providers.translation, stt=False)
+        self._trans_slots = self._build_provider_slots(
+            tab_trans, self._config.providers.translation, stt=False, translation=True)
 
-        # DeepL keys section
-        ttk.Separator(tab_trans, orient="horizontal").pack(fill="x", pady=(8, 4))
-        ttk.Label(tab_trans, text="DeepL API Keys", font=("Segoe UI", 9, "bold")).pack(anchor="w")
-
-        deepl_frame = ttk.Frame(tab_trans)
-        deepl_frame.pack(fill="x", pady=(4, 0))
-
-        saved_deepl = load_deepl_keys()
-        self._deepl_key_vars = []
-        self._deepl_entries = []
-        self._deepl_usage_labels = []
-        for i in range(5):
-            val = saved_deepl[i] if i < len(saved_deepl) else ""
-            var = tk.StringVar(master=self._window, value=val)
-            self._deepl_key_vars.append(var)
-            row_frame = ttk.Frame(deepl_frame)
-            row_frame.pack(fill="x", pady=1)
-            entry = ttk.Entry(row_frame, textvariable=var, width=42, show="*")
-            entry.pack(side="left", fill="x", expand=True)
-            self._deepl_entries.append(entry)
-            usage_label = tk.Label(
-                row_frame, text="",
-                fg=self._dark_fg2 if self._is_dark else "#888888",
-                bg=self._dark_bg if self._is_dark else row_frame.winfo_toplevel().cget("bg"),
-                font=("Segoe UI", 8), width=12, anchor="w",
-            )
-            usage_label.pack(side="left", padx=(4, 0))
-            self._deepl_usage_labels.append(usage_label)
-
-        # Fetch DeepL usage in background
-        def _fetch_deepl_usage():
-            for i, key in enumerate(saved_deepl):
-                if not key.strip():
-                    continue
-                try:
-                    import httpx
-                    base = "https://api-free.deepl.com" if key.endswith(":fx") else "https://api.deepl.com"
-                    with httpx.Client(timeout=10.0) as client:
-                        resp = client.get(f"{base}/v2/usage",
-                                          headers={"Authorization": f"DeepL-Auth-Key {key}"})
-                        if resp.status_code == 200:
-                            data = resp.json()
-                            used = data.get("character_count", 0)
-                            limit = data.get("character_limit", 0)
-                            used_k = f"{used // 1000}K"
-                            limit_k = f"{limit // 1000}K"
-                            color = "#27ae60" if used < limit * 0.8 else "#e67e22" if used < limit else "#e74c3c"
-                            self._deepl_usage_labels[i].config(text=f"{used_k}/{limit_k}", fg=color)
-                        elif resp.status_code == 403:
-                            self._deepl_usage_labels[i].config(text="invalid", fg="#e74c3c")
-                except Exception:
-                    self._deepl_usage_labels[i].config(text="error", fg="#e74c3c")
-        threading.Thread(target=_fetch_deepl_usage, daemon=True).start()
-
-        self._show_deepl_var = tk.BooleanVar(master=self._window, value=False)
-        ttk.Checkbutton(tab_trans, text=t("settings.show_key"), variable=self._show_deepl_var,
-                        command=lambda: [e.config(show="" if self._show_deepl_var.get() else "*")
-                                         for e in self._deepl_entries]).pack(anchor="w")
-
-        # --- Tab 4: Audio ---
-        tab_audio = ttk.Frame(notebook, padding=12)
-        notebook.add(tab_audio, text=f"  {t('settings.tab_audio')}  ")
-
-        ttk.Label(tab_audio, text=t("settings.mic_device")).grid(row=0, column=0, sticky="w", pady=4)
-        devices = self._audio.list_devices()
-        device_names = [t("settings.mic_auto")] + [f"[{d.index}] {d.name}" for d in devices]
-        self._mic_var = tk.StringVar(master=self._window)
-        if self._config.audio.mic_device_index is None:
-            self._mic_var.set(t("settings.mic_auto"))
-        else:
-            for d in devices:
-                if d.index == self._config.audio.mic_device_index:
-                    self._mic_var.set(f"[{d.index}] {d.name}")
-                    break
-        mic_combo = ttk.Combobox(tab_audio, textvariable=self._mic_var, width=45, values=device_names)
-        mic_combo.grid(row=0, column=1, sticky="we", pady=4, padx=(8, 0))
-
-        ttk.Label(tab_audio, text=t("settings.noise_filter")).grid(row=1, column=0, sticky="nw", pady=4)
-        self._vad_var = tk.IntVar(master=self._window, value=self._config.audio.vad_aggressiveness)
-        vad_frame = ttk.Frame(tab_audio)
-        vad_frame.grid(row=1, column=1, sticky="w", padx=(8, 0))
-        vad_labels = {
-            0: t("settings.vad_0"),
-            1: t("settings.vad_1"),
-            2: t("settings.vad_2"),
-            3: t("settings.vad_3"),
-        }
-        for val, label in vad_labels.items():
-            ttk.Radiobutton(vad_frame, text=label, variable=self._vad_var, value=val).pack(anchor="w")
-
-        ttk.Label(tab_audio, text=t("settings.pause_to_split")).grid(row=2, column=0, sticky="w", pady=(12, 4))
-        self._silence_var = tk.IntVar(master=self._window, value=self._config.audio.silence_threshold_ms)
-        silence_frame = ttk.Frame(tab_audio)
-        silence_frame.grid(row=2, column=1, sticky="we", pady=(12, 4), padx=(8, 0))
-        ttk.Scale(silence_frame, from_=500, to=5000, variable=self._silence_var, orient="horizontal", length=250).pack(
-            side="left"
-        )
-        self._silence_label = ttk.Label(silence_frame, text=f"{self._silence_var.get()} ms")
-        self._silence_label.pack(side="left", padx=8)
-        self._silence_var.trace_add("write", lambda *_: self._silence_label.config(
-            text=f"{self._silence_var.get()} ms"
-        ))
-        ttk.Label(tab_audio, text=t("settings.pause_hint"),
-                  foreground="gray").grid(row=3, column=1, sticky="w", padx=(8, 0))
-
-        tab_audio.columnconfigure(1, weight=1)
-
-        # --- Tab 3: Dictation ---
+        # --- Tab 4: Dictation & Audio (merged) ---
         tab_dict = ttk.Frame(notebook, padding=12)
         notebook.add(tab_dict, text=f"  {t('settings.tab_dictation')}  ")
 
+        # Hotkey section
         ttk.Label(tab_dict, text=t("settings.hotkey_label")).grid(row=0, column=0, sticky="w", pady=4)
         hotkey_frame = ttk.Frame(tab_dict)
         hotkey_frame.grid(row=0, column=1, sticky="w", padx=(8, 0), pady=4)
@@ -338,22 +233,55 @@ class SettingsWindow:
         ttk.Label(tab_dict, text=t("settings.hold_hint"),
                   foreground="gray").grid(row=3, column=1, sticky="w", padx=(8, 0))
 
-        self._normalize_var = tk.BooleanVar(master=self._window, value=self._config.normalization.enabled)
-        ttk.Checkbutton(tab_dict, text=t("settings.normalize_check"),
-                        variable=self._normalize_var).grid(row=5, column=0, columnspan=2, sticky="w", pady=8)
+        # Audio section separator
+        ttk.Separator(tab_dict, orient="horizontal").grid(
+            row=4, column=0, columnspan=2, sticky="we", pady=(12, 4))
 
-        # Double-tap feedback hint
+        ttk.Label(tab_dict, text=t("settings.mic_device")).grid(row=5, column=0, sticky="w", pady=4)
+        devices = self._audio.list_devices()
+        device_names = [t("settings.mic_auto")] + [f"[{d.index}] {d.name}" for d in devices]
+        self._mic_var = tk.StringVar(master=self._window)
+        if self._config.audio.mic_device_index is None:
+            self._mic_var.set(t("settings.mic_auto"))
+        else:
+            for d in devices:
+                if d.index == self._config.audio.mic_device_index:
+                    self._mic_var.set(f"[{d.index}] {d.name}")
+                    break
+        mic_combo = ttk.Combobox(tab_dict, textvariable=self._mic_var, width=45, values=device_names)
+        mic_combo.grid(row=5, column=1, sticky="we", pady=4, padx=(8, 0))
+
+        ttk.Label(tab_dict, text=t("settings.noise_filter")).grid(row=6, column=0, sticky="nw", pady=4)
+        self._vad_var = tk.IntVar(master=self._window, value=self._config.audio.vad_aggressiveness)
+        vad_frame = ttk.Frame(tab_dict)
+        vad_frame.grid(row=6, column=1, sticky="w", padx=(8, 0))
+        for val, label in {0: t("settings.vad_0"), 1: t("settings.vad_1"),
+                           2: t("settings.vad_2"), 3: t("settings.vad_3")}.items():
+            ttk.Radiobutton(vad_frame, text=label, variable=self._vad_var, value=val).pack(anchor="w")
+
+        ttk.Label(tab_dict, text=t("settings.pause_to_split")).grid(row=7, column=0, sticky="w", pady=(8, 4))
+        self._silence_var = tk.IntVar(master=self._window, value=self._config.audio.silence_threshold_ms)
+        silence_frame = ttk.Frame(tab_dict)
+        silence_frame.grid(row=7, column=1, sticky="we", pady=(8, 4), padx=(8, 0))
+        ttk.Scale(silence_frame, from_=500, to=5000, variable=self._silence_var,
+                  orient="horizontal", length=250).pack(side="left")
+        self._silence_label = ttk.Label(silence_frame, text=f"{self._silence_var.get()} ms")
+        self._silence_label.pack(side="left", padx=8)
+        self._silence_var.trace_add("write", lambda *_: self._silence_label.config(
+            text=f"{self._silence_var.get()} ms"))
+
+        # Feedback hint
         feedback_hint = tk.Label(
             tab_dict, text=t("settings.feedback_hint"),
             fg=self._dark_fg2 if self._is_dark else "#888888",
             bg=self._dark_bg if self._is_dark else tab_dict.winfo_toplevel().cget("bg"),
-            font=("Segoe UI", 8), anchor="w", justify="left", wraplength=450,
+            font=("Segoe UI", 8), anchor="w", justify="left", wraplength=550,
         )
-        feedback_hint.grid(row=6, column=0, columnspan=2, sticky="w", pady=(12, 4))
+        feedback_hint.grid(row=8, column=0, columnspan=2, sticky="w", pady=(12, 0))
 
         tab_dict.columnconfigure(1, weight=1)
 
-        # --- Tab 4: Interface ---
+        # --- Tab 5: Interface & Telemetry (merged) ---
         tab_iface = ttk.Frame(notebook, padding=12)
         notebook.add(tab_iface, text=f"  {t('settings.tab_interface')}  ")
 
@@ -378,39 +306,28 @@ class SettingsWindow:
 
         ttk.Label(tab_iface, text=t("settings.ui_language")).grid(row=5, column=0, sticky="w", pady=4)
         self._ui_lang_var = tk.StringVar(master=self._window, value=self._config.ui.language)
-        ui_lang_combo = ttk.Combobox(tab_iface, textvariable=self._ui_lang_var, width=15, values=[
+        ttk.Combobox(tab_iface, textvariable=self._ui_lang_var, width=15, values=[
             "uk", "en",
-        ], state="readonly")
-        ui_lang_combo.grid(row=5, column=1, sticky="w", padx=(8, 0), pady=4)
+        ], state="readonly").grid(row=5, column=1, sticky="w", padx=(8, 0), pady=4)
 
         ttk.Label(tab_iface, text=t("settings.theme")).grid(row=6, column=0, sticky="w", pady=4)
         self._theme_var = tk.StringVar(master=self._window, value=self._load_theme())
-        theme_combo = ttk.Combobox(tab_iface, textvariable=self._theme_var, width=15, values=[
+        ttk.Combobox(tab_iface, textvariable=self._theme_var, width=15, values=[
             "auto", "light", "dark",
-        ], state="readonly")
-        theme_combo.grid(row=6, column=1, sticky="w", padx=(8, 0), pady=4)
+        ], state="readonly").grid(row=6, column=1, sticky="w", padx=(8, 0), pady=4)
+
+        ttk.Separator(tab_iface, orient="horizontal").grid(
+            row=7, column=0, columnspan=2, sticky="we", pady=(12, 4))
+
+        self._telemetry_var = tk.BooleanVar(master=self._window, value=self._config.telemetry.enabled)
+        ttk.Checkbutton(tab_iface, text=t("settings.telemetry_enabled"),
+                        variable=self._telemetry_var).grid(row=8, column=0, columnspan=2, sticky="w", pady=2)
+
+        ttk.Label(tab_iface, text=t("settings.telemetry_hint"),
+                  foreground="#888888", font=("Segoe UI", 8), wraplength=550,
+                  ).grid(row=9, column=0, columnspan=2, sticky="w", pady=(2, 0))
 
         tab_iface.columnconfigure(1, weight=1)
-
-        # --- Tab 5: Telemetry ---
-        tab_tel = ttk.Frame(notebook, padding=12)
-        notebook.add(tab_tel, text=f"  {t('settings.tab_telemetry')}  ")
-
-        self._telemetry_var = tk.BooleanVar(
-            master=self._window, value=self._config.telemetry.enabled
-        )
-        ttk.Checkbutton(
-            tab_tel, text=t("settings.telemetry_enabled"),
-            variable=self._telemetry_var,
-        ).grid(row=0, column=0, sticky="w", pady=(4, 0))
-
-        ttk.Label(
-            tab_tel, text=t("settings.telemetry_hint"),
-            foreground="#888888", font=("Segoe UI", 8),
-            wraplength=450,
-        ).grid(row=1, column=0, sticky="w", pady=(2, 12))
-
-        tab_tel.columnconfigure(0, weight=1)
 
         self._window.mainloop()
 
@@ -418,87 +335,105 @@ class SettingsWindow:
 
     # ── Provider slot builder ─────────────────────────────────────────
 
-    def _build_provider_slots(self, parent, slots_config: list[dict], stt: bool = False) -> list[dict]:
-        """Build 3 provider slots UI in the given parent frame.
+    def _build_provider_slots(self, parent, slots_config: list[dict],
+                              stt: bool = False, translation: bool = False) -> list[dict]:
+        """Build 3 provider slots UI with best-practice layout.
+
+        Each slot:
+          ┌─ #1 ──────────────────────────────────────────────┐
+          │  API Key: [****************************]  Groq ✓  │
+          │  Service: [Groq        ▼]  Model: [whisper  ▼]    │
+          └───────────────────────────────────────────────────┘
 
         Args:
             parent: ttk.Frame to build in.
             slots_config: list of 3 slot dicts from config.
-            stt: If True, filter models for STT (whisper); else for LLM.
-
-        Returns:
-            list of 3 dicts with tk vars: {api_key_var, provider_var, model_var, usage_label}
+            stt: If True, filter models for STT (whisper).
+            translation: If True, include DeepL in provider list.
         """
-        from .providers import detect_provider, fetch_models, get_provider_base_url, ALL_STT_PROVIDERS, ALL_LLM_PROVIDERS
+        from .providers import detect_provider, fetch_models, ALL_STT_PROVIDERS, ALL_LLM_PROVIDERS
 
         # Hint
         ttk.Label(parent, text=t("settings.provider_fallback_hint"),
-                  foreground="#888888", font=("Segoe UI", 8)).pack(anchor="w", pady=(0, 8))
+                  foreground="#888888", font=("Segoe UI", 8)).pack(anchor="w", pady=(0, 6))
 
         slot_widgets = []
-        provider_list = ALL_STT_PROVIDERS if stt else ALL_LLM_PROVIDERS
+        provider_list = list(ALL_STT_PROVIDERS) if stt else list(ALL_LLM_PROVIDERS)
+        if translation:
+            provider_list.insert(0, "DeepL")
 
         for idx in range(3):
             slot_data = slots_config[idx] if idx < len(slots_config) else {}
 
-            frame = ttk.LabelFrame(parent, text=f"  #{idx + 1}  ", padding=6)
-            frame.pack(fill="x", pady=(0, 6))
+            frame = ttk.LabelFrame(parent, text=f"  #{idx + 1}  ", padding=(10, 6))
+            frame.pack(fill="x", pady=(0, 4))
 
-            # Row 1: API Key
-            key_frame = ttk.Frame(frame)
-            key_frame.pack(fill="x")
+            # Row 1: "API Key:" label + entry + status
+            row1 = ttk.Frame(frame)
+            row1.pack(fill="x")
 
+            ttk.Label(row1, text="API Key:", width=8).pack(side="left")
             api_var = tk.StringVar(master=self._window, value=slot_data.get("api_key", ""))
-            key_entry = ttk.Entry(key_frame, textvariable=api_var, width=48, show="*")
-            key_entry.pack(side="left", fill="x", expand=True)
+            key_entry = ttk.Entry(row1, textvariable=api_var, show="*")
+            key_entry.pack(side="left", fill="x", expand=True, padx=(4, 8))
 
             usage_label = tk.Label(
-                key_frame, text=t("settings.provider_not_connected"),
+                row1, text=t("settings.provider_not_connected"),
                 fg=self._dark_fg2 if self._is_dark else "#888888",
-                bg=self._dark_bg if self._is_dark else key_frame.winfo_toplevel().cget("bg"),
-                font=("Segoe UI", 8), anchor="e", width=16,
+                bg=self._dark_bg if self._is_dark else row1.winfo_toplevel().cget("bg"),
+                font=("Segoe UI", 8), anchor="e", width=18,
             )
-            usage_label.pack(side="right", padx=(4, 0))
+            usage_label.pack(side="right")
 
-            # Row 2: Provider dropdown + Model dropdown
+            # Row 2: Service dropdown + Model dropdown (with labels)
             row2 = ttk.Frame(frame)
-            row2.pack(fill="x", pady=(4, 0))
+            row2.pack(fill="x", pady=(6, 0))
 
+            ttk.Label(row2, text="Service:", width=8).pack(side="left")
             provider_var = tk.StringVar(master=self._window, value=slot_data.get("provider", ""))
             provider_combo = ttk.Combobox(row2, textvariable=provider_var, values=provider_list,
-                                          width=18, state="readonly")
-            provider_combo.pack(side="left")
+                                          width=16, state="readonly")
+            provider_combo.pack(side="left", padx=(4, 0))
 
+            ttk.Label(row2, text="Model:", width=6).pack(side="left", padx=(12, 0))
             model_var = tk.StringVar(master=self._window, value=slot_data.get("model", ""))
-            model_combo = ttk.Combobox(row2, textvariable=model_var, width=30)
-            model_combo.pack(side="left", padx=(8, 0), fill="x", expand=True)
+            model_combo = ttk.Combobox(row2, textvariable=model_var, width=28)
+            model_combo.pack(side="left", padx=(4, 0), fill="x", expand=True)
 
-            # Auto-detect provider when API key changes
-            def _on_key_change(var=api_var, pvar=provider_var, mcombo=model_combo,
-                               mvar=model_var, ulabel=usage_label, is_stt=stt):
+            # Auto-detect provider on key change + lock dropdown
+            def _on_key_change(var=api_var, pvar=provider_var, pcombo=provider_combo,
+                               mcombo=model_combo, mvar=model_var, ulabel=usage_label,
+                               is_stt=stt):
                 key = var.get().strip()
                 if not key:
                     pvar.set("")
+                    pcombo.config(state="readonly")  # unlock
                     mcombo["values"] = []
                     mvar.set("")
-                    ulabel.config(text=t("settings.provider_not_connected"))
+                    ulabel.config(text=t("settings.provider_not_connected"),
+                                 fg=self._dark_fg2 or "#888888")
                     return
                 info = detect_provider(key)
                 if info:
                     pvar.set(info.name)
+                    pcombo.config(state="disabled")  # lock — auto-detected
                     # Fetch models in background
                     def _fetch(base=info.base_url, k=key):
                         models = fetch_models(base, k, stt=is_stt)
-                        if models and self._window:
-                            self._window.after(0, lambda: mcombo.config(values=models))
-                            if not mvar.get() and models:
-                                self._window.after(0, lambda: mvar.set(models[0]))
-                            self._window.after(0, lambda: ulabel.config(
-                                text=info.name, fg="#27ae60"))
-                        elif self._window:
-                            self._window.after(0, lambda: ulabel.config(
-                                text=info.name, fg=self._dark_fg2 or "#888888"))
+                        if self._window:
+                            def _update():
+                                if models:
+                                    mcombo.config(values=models)
+                                    if not mvar.get():
+                                        mvar.set(models[0])
+                                ulabel.config(text=f"{info.name} \u2713", fg="#27ae60")
+                            self._window.after(0, _update)
                     threading.Thread(target=_fetch, daemon=True).start()
+                else:
+                    # Unknown prefix — keep dropdown unlocked for manual selection
+                    pcombo.config(state="readonly")
+                    ulabel.config(text="? " + t("settings.provider_not_connected"),
+                                 fg="#e67e22")
 
             api_var.trace_add("write", lambda *_, fn=_on_key_change: fn())
 
@@ -509,21 +444,30 @@ class SettingsWindow:
             slot_widgets.append({
                 "api_key_var": api_var,
                 "provider_var": provider_var,
+                "provider_combo": provider_combo,
                 "model_var": model_var,
                 "usage_label": usage_label,
             })
 
-        # Show/hide keys
+        # Show/hide keys toggle
         show_var = tk.BooleanVar(master=self._window, value=False)
-        entries = [w for f in parent.winfo_children()
-                   if isinstance(f, ttk.LabelFrame)
-                   for w in f.winfo_children()
-                   if isinstance(w, ttk.Frame)
-                   for w in w.winfo_children()
-                   if isinstance(w, ttk.Entry)]
+
+        def _toggle_show():
+            show = show_var.get()
+            for sw in slot_widgets:
+                # Find entry in the parent frame
+                pass
+            # Walk all entries in LabelFrames
+            for child in parent.winfo_children():
+                if isinstance(child, ttk.LabelFrame):
+                    for row in child.winfo_children():
+                        if isinstance(row, ttk.Frame):
+                            for w in row.winfo_children():
+                                if isinstance(w, ttk.Entry):
+                                    w.config(show="" if show else "*")
+
         ttk.Checkbutton(parent, text=t("settings.show_key"), variable=show_var,
-                        command=lambda: [e.config(show="" if show_var.get() else "*")
-                                         for e in entries]).pack(anchor="w")
+                        command=_toggle_show).pack(anchor="w", pady=(4, 0))
 
         return slot_widgets
 

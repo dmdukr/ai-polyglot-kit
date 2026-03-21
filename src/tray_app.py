@@ -593,7 +593,7 @@ class TrayApp:
                 font=("Segoe UI", 12, "bold"),
             ).pack(pady=(0, 12))
             about_ttk.Label(
-                frame, text="Author: Dmytro Dubinko\nLicense: GPL-3.0\n\ngithub.com/dmdukr/groq-dictation",
+                frame, text="Author: Dmytro Dubinko\nLicense: GPL-3.0\n\ngithub.com/dmdukr/ai-polyglot-kit",
                 font=("Segoe UI", 10), justify="center",
             ).pack()
             about_ttk.Button(root, text="OK", command=root.destroy, style="Accent.TButton").pack(pady=12)
