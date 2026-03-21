@@ -12,8 +12,8 @@ System-wide dictation, text normalization, and translation for Windows — power
 
 ## Features
 
-- **7 STT providers** — Groq, OpenAI, Soniox, Deepgram, Gladia, Speechmatics, AssemblyAI
-- **8+ LLM providers** — Groq, Google AI Studio, Cerebras, Mistral, OpenRouter, OpenAI, xAI, GitHub Models
+- **7 STT providers** (6 with free tier) — Groq, Soniox, Deepgram, Gladia, Speechmatics, AssemblyAI + OpenAI (paid)
+- **8+ LLM providers** (7 with free tier) — Groq, Google AI Studio, Cerebras, Mistral, OpenRouter, xAI, GitHub Models + OpenAI (paid)
 - **3-slot failover** — when provider #1 exhausts its free limit, auto-switch to #2, then #3
 - **Auto-detect provider** — paste API key → app detects the service and fetches available models
 - **Two recording modes** — Hold (hold key to record, release to stop) or Toggle (press to start, press again to stop)
@@ -27,8 +27,8 @@ System-wide dictation, text normalization, and translation for Windows — power
 
 1. Download `AIPolyglotKit-setup.exe` from [Releases](https://github.com/dmdukr/ai-polyglot-kit/releases)
 2. Run the installer
-3. Get a free API key from any supported provider (see [Provider Guide](#stt-providers) below)
-4. Click tray icon → **Settings** → paste your API key into the STT tab
+3. Get free API keys from one or more providers (see [Provider Guide](#stt-providers) below)
+4. Click tray icon → **Settings** → paste API keys into STT, Normalization, and Translation tabs
 
 > **Updating**: automatic — the app checks for new versions and notifies you.
 
@@ -165,8 +165,8 @@ Found a bug? [Open an issue](https://github.com/dmdukr/ai-polyglot-kit/issues)
 
 ## Можливості
 
-- **7 STT провайдерів** — Groq, OpenAI, Soniox, Deepgram, Gladia, Speechmatics, AssemblyAI
-- **8+ LLM провайдерів** — Groq, Google AI Studio, Cerebras, Mistral, OpenRouter, OpenAI, xAI, GitHub Models
+- **7 STT провайдерів** (6 з безкоштовним доступом) — Groq, Soniox, Deepgram, Gladia, Speechmatics, AssemblyAI + OpenAI (платний)
+- **8+ LLM провайдерів** (7 з безкоштовним доступом) — Groq, Google AI Studio, Cerebras, Mistral, OpenRouter, xAI, GitHub Models + OpenAI (платний)
 - **3 слоти з failover** — коли лімт провайдера #1 вичерпано → автопереключення на #2 → #3
 - **Автовизначення провайдера** — вставте API ключ → програма визначить сервіс та завантажить доступні моделі
 - **Два режими запису** — Утримання (тримайте клавішу для запису, відпустіть для зупинки) або Перемикач (натисніть для старту, ще раз для зупинки)
@@ -180,8 +180,8 @@ Found a bug? [Open an issue](https://github.com/dmdukr/ai-polyglot-kit/issues)
 
 1. Завантажте `AIPolyglotKit-setup.exe` з [Releases](https://github.com/dmdukr/ai-polyglot-kit/releases)
 2. Запустіть інсталятор
-3. Отримайте безкоштовний API ключ від будь-якого провайдера (див. [Гід по провайдерах](#stt-провайдери) нижче)
-4. Натисніть іконку в треї → **Налаштування** → вставте ключ у вкладку STT
+3. Отримайте безкоштовні API ключі від одного або кількох провайдерів (див. [Гід по провайдерах](#stt-провайдери) нижче)
+4. Натисніть іконку в треї → **Налаштування** → вставте ключі у вкладки STT, Нормалізація та Переклад
 
 ---
 
