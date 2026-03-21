@@ -606,21 +606,20 @@ class SettingsWindow:
         dlg.title("Groq Dictation")
         dlg.resizable(False, False)
         dlg.attributes("-topmost", True)
-
-        try:
-            import sv_ttk
-            sv_ttk.set_theme("dark" if self._is_dark else "light")
-            if self._is_dark:
-                dlg.update()
-                set_dwm_dark_title_bar(dlg)
-        except ImportError:
-            pass
-
         dlg.geometry("400x140")
         dlg.update_idletasks()
         x = (dlg.winfo_screenwidth() - 400) // 2
         y = (dlg.winfo_screenheight() - 140) // 2
         dlg.geometry(f"+{x}+{y}")
+
+        try:
+            import sv_ttk
+            dlg.update()
+            sv_ttk.set_theme("dark" if self._is_dark else "light")
+            if self._is_dark:
+                set_dwm_dark_title_bar(dlg)
+        except ImportError:
+            pass
 
         ttk.Label(dlg, text=t("settings.restart_prompt"),
                   font=("Segoe UI", 10), wraplength=360).pack(padx=20, pady=(20, 16))
