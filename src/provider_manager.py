@@ -29,7 +29,16 @@ def _create_stt_connector(slot: dict, on_quota_warning=None) -> STTConnector | N
     if provider == "Deepgram":
         from .connectors.deepgram_stt import DeepgramSTT
         return DeepgramSTT(api_key=api_key, model=model or "nova-3")
-    if provider in STT_PROVIDERS and provider not in ("Soniox", "Deepgram"):
+    if provider == "Gladia":
+        from .connectors.gladia_stt import GladiaSTT
+        return GladiaSTT(api_key=api_key, model=model or "solaria-1")
+    if provider == "Speechmatics":
+        from .connectors.speechmatics_stt import SpeechmaticsSTT
+        return SpeechmaticsSTT(api_key=api_key, model=model or "enhanced")
+    if provider == "AssemblyAI":
+        from .connectors.assembly_stt import AssemblySTT
+        return AssemblySTT(api_key=api_key, model=model or "best")
+    if provider in STT_PROVIDERS:
         logger.warning("STT connector for %s not yet implemented", provider)
         return None
 
