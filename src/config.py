@@ -92,8 +92,38 @@ class LoggingConfig:
 
 
 @dataclass
+class ProviderSlot:
+    """One provider slot (API key + detected provider + model)."""
+    api_key: str = ""
+    provider: str = ""       # auto-detected or user-selected name
+    base_url: str = ""       # auto-resolved or manual
+    model: str = ""          # selected model ID
+
+
+@dataclass
+class ProvidersConfig:
+    """Multi-provider slots with fallback chains."""
+    stt: list = field(default_factory=lambda: [
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+    ])
+    llm: list = field(default_factory=lambda: [
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+    ])
+    translation: list = field(default_factory=lambda: [
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+        {"api_key": "", "provider": "", "base_url": "", "model": ""},
+    ])
+
+
+@dataclass
 class AppConfig:
-    groq: GroqConfig = field(default_factory=GroqConfig)
+    groq: GroqConfig = field(default_factory=GroqConfig)  # backward compat, migrated on load
+    providers: ProvidersConfig = field(default_factory=ProvidersConfig)
     audio: AudioConfig = field(default_factory=AudioConfig)
     hotkey: str = "f12"
     hotkey_mode: str = "hold"  # "toggle" = press on/off, "hold" = record while held
@@ -141,7 +171,35 @@ class AppConfig:
         if env_key:
             config.groq.api_key = env_key
 
+        # Auto-migrate old groq config → provider slots
+        config._migrate_groq_to_providers()
+
         return config
+
+    def _migrate_groq_to_providers(self) -> None:
+        """If groq.api_key is set and providers are empty, auto-migrate."""
+        key = self.groq.api_key
+        if not key:
+            return
+        # Check if STT slot #1 is already populated
+        if self.providers.stt[0].get("api_key", ""):
+            return
+        logger.info("Migrating Groq config → provider slots")
+        self.providers.stt[0] = {
+            "api_key": key, "provider": "Groq",
+            "base_url": "https://api.groq.com/openai/v1",
+            "model": self.groq.stt_model,
+        }
+        self.providers.llm[0] = {
+            "api_key": key, "provider": "Groq",
+            "base_url": "https://api.groq.com/openai/v1",
+            "model": self.groq.llm_model,
+        }
+        self.providers.translation[0] = {
+            "api_key": key, "provider": "Groq",
+            "base_url": "https://api.groq.com/openai/v1",
+            "model": self.groq.llm_model,
+        }
 
     def _apply_dict(self, data: dict) -> None:
         """Apply a dictionary of settings to this config.

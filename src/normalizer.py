@@ -21,9 +21,8 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from typing import Callable
 
-import httpx
-
-from .config import GroqConfig, NormalizationConfig
+from .config import NormalizationConfig
+from .connectors.base import LLMConnector
 
 logger = logging.getLogger(__name__)
 
@@ -61,16 +60,11 @@ Be concise — this summary will be injected as context for the next session."""
 class Normalizer:
     """Session-based normalizer — maintains LLM conversation state."""
 
-    def __init__(self, groq_config: GroqConfig, norm_config: NormalizationConfig,
+    def __init__(self, llm: LLMConnector | None, norm_config: NormalizationConfig,
                  profile=None):
-        self._groq_config = groq_config
+        self._llm = llm
         self._norm_config = norm_config
         self._profile = profile
-        self._http = httpx.Client(
-            base_url="https://api.groq.com/openai/v1",
-            headers={"Authorization": f"Bearer {groq_config.api_key}"},
-            timeout=30.0,
-        )
 
         # Session state
         self._messages: list[dict] = []
@@ -226,28 +220,17 @@ class Normalizer:
 
     def _get_session_summary(self) -> str:
         """Ask current session to summarize conversation context."""
-        if len(self._messages) < 3:  # system + at least one exchange
+        if not self._llm or len(self._messages) < 3:
             return ""
 
         try:
             messages = self._messages + [
                 {"role": "user", "content": HANDOFF_SUMMARY_PROMPT}
             ]
-
-            resp = self._http.post(
-                "/chat/completions",
-                json={
-                    "model": self._groq_config.llm_model,
-                    "messages": messages,
-                    "temperature": 0.3,
-                    "max_tokens": 300,
-                },
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            summary = data["choices"][0]["message"]["content"].strip()
-            logger.info("Session summary: %s", summary[:100])
-            return summary
+            summary = self._llm.chat(messages, temperature=0.3, max_tokens=300)
+            if summary:
+                logger.info("Session summary: %s", summary[:100])
+            return summary or ""
 
         except Exception as e:
             logger.warning("Failed to get session summary: %s", e)
@@ -284,65 +267,34 @@ class Normalizer:
 
     def _send_message(self, user_content: str) -> str | None:
         """Send a message in the current session and get response."""
+        if not self._llm:
+            logger.warning("No LLM connector available for normalization")
+            return None
+
         with self._lock:
             self._messages.append({"role": "user", "content": user_content})
 
         try:
-            resp = self._http.post(
-                "/chat/completions",
-                json={
-                    "model": self._groq_config.llm_model,
-                    "messages": self._messages,
-                    "temperature": self._norm_config.temperature,
-                    "max_tokens": 2000,
-                },
+            result = self._llm.chat(
+                messages=self._messages,
+                temperature=self._norm_config.temperature,
+                max_tokens=2000,
             )
 
-            if resp.status_code == 429:
-                logger.warning("Rate limited, retrying...")
-                import time as _time
-                _time.sleep(2)
-                resp = self._http.post(
-                    "/chat/completions",
-                    json={
-                        "model": self._groq_config.llm_model,
-                        "messages": self._messages,
-                        "temperature": self._norm_config.temperature,
-                        "max_tokens": 2000,
-                    },
-                )
-
-            if resp.status_code == 401:
-                logger.error("Auth failed")
+            if result is None:
                 with self._lock:
-                    self._messages.pop()  # remove failed user message
+                    self._messages.pop()
                 return None
 
-            resp.raise_for_status()
-            data = resp.json()
-
-            result = data["choices"][0]["message"]["content"].strip()
-
-            # Track actual token usage from API
-            usage = data.get("usage", {})
-            total_tokens = usage.get("total_tokens", 0)
-            if total_tokens:
-                with self._lock:
-                    self._session_tokens = total_tokens
-
-            # Add assistant response to conversation
+            # Estimate token usage (LLM connector tracks internally)
             with self._lock:
+                self._session_tokens += len(user_content) // 3 + len(result) // 3
                 self._messages.append({"role": "assistant", "content": result})
 
-            logger.info("LLM response (%d tokens total): '%s'",
+            logger.info("LLM response (%d tokens est.): '%s'",
                         self._session_tokens, result[:100])
             return result
 
-        except httpx.HTTPStatusError as e:
-            logger.error("LLM HTTP error: %s", e)
-            with self._lock:
-                self._messages.pop()  # remove failed user message
-            return None
         except Exception as e:
             logger.error("LLM error: %s", e)
             with self._lock:

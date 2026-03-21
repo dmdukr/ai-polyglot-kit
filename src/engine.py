@@ -11,12 +11,12 @@ from typing import Callable
 from .config import AppConfig
 from .audio_capture import AudioCapture
 from .chunk_manager import ChunkManager
-from .groq_stt import GroqSTT
 from .normalizer import Normalizer
 from .text_injector import TextInjector
 from .recording_overlay import RecordingOverlay
 from .user_profile import UserProfile
 from .telemetry import TelemetryCollector
+from .provider_manager import ProviderManager
 
 logger = logging.getLogger(__name__)
 
@@ -63,22 +63,20 @@ class DictationEngine:
             decay_days=config.profile.decay_days,
         )
         self._profile.load()
-        self._normalizer = Normalizer(config.groq, config.normalization, profile=self._profile)
+        # Provider manager (multi-slot fallback for STT + LLM)
+        self._quota_callback: Callable[[int, int], None] | None = None
+        self._providers = ProviderManager(config.providers, on_quota_warning=self._on_quota_warning)
+
+        # Normalizer uses LLM connector from provider manager
+        llm = self._providers.get_llm()
+        self._normalizer = Normalizer(llm, config.normalization, profile=self._profile)
         self._injector = TextInjector(config.text_injection)
         self._overlay = RecordingOverlay()
         self._telemetry = TelemetryCollector(enabled=config.telemetry.enabled)
         self._viz_queue: queue.Queue[bytes] | None = None
 
-        # Pre-init STT client (so first recording is fast)
-        self._quota_callback: Callable[[int, int], None] | None = None
-        try:
-            self._stt = GroqSTT(config.groq, on_quota_warning=self._on_quota_warning)
-        except Exception as e:
-            logger.warning(f"STT pre-init failed (will retry on first recording): {e}")
-            self._stt = None
-
         # Thread pool for API calls
-        self._executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="groq")
+        self._executor = ThreadPoolExecutor(max_workers=3, thread_name_prefix="stt")
 
         # Session state
         self._session_text: list[str] = []
@@ -241,9 +239,10 @@ class DictationEngine:
             return
 
         try:
-            # Create STT client (validates API key)
-            if self._stt is None:
-                self._stt = GroqSTT(self._config.groq)
+            # Get STT connector from provider manager
+            stt = self._providers.get_stt()
+            if stt is None:
+                raise RuntimeError("No STT provider configured. Add API key in Settings → STT.")
 
             # Start audio stream if not already running (kept open between recordings)
             if not self._audio.is_running:
@@ -373,7 +372,14 @@ class DictationEngine:
     def _process_chunk(self, chunk_id: int, wav_bytes: bytes) -> None:
         """Transcribe a chunk and queue it for typing."""
         try:
-            text = self._stt.transcribe(wav_bytes, previous_text=self._previous_text)
+            stt = self._providers.get_stt()
+            if stt is None:
+                logger.error("No STT connector available for chunk %d", chunk_id)
+                with self._typing_lock:
+                    self._pending_results[chunk_id] = ""
+                    self._flush_pending_typing()
+                return
+            text = stt.transcribe(wav_bytes, previous_text=self._previous_text)
 
             if text:
                 logger.info(f"Chunk {chunk_id}: '{text}'")
@@ -591,6 +597,10 @@ class DictationEngine:
             except Exception:
                 pass
 
+    def get_provider_manager(self) -> ProviderManager:
+        """Access ProviderManager for Settings UI and tray."""
+        return self._providers
+
     def shutdown(self) -> None:
         """Graceful shutdown — close everything."""
         logger.info("Shutting down engine")
@@ -600,7 +610,7 @@ class DictationEngine:
         except Exception:
             pass
         self._executor.shutdown(wait=False)
-        # Save user profile
+        self._providers.shutdown()
         if self._profile:
             try:
                 self._profile.save(force=True)
