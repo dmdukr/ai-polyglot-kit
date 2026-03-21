@@ -1,7 +1,7 @@
 """Quick-translate overlay — triggered by double Ctrl+C.
 
-Shows clipboard text translated to selected language in a floating overlay.
-2026 design: elevated neutrals, warm tones, frosted glass effect.
+Shows clipboard text translated to selected language.
+Design: flat UI — navy header, light cards, orange accents.
 """
 
 import json
@@ -10,6 +10,7 @@ import threading
 import time
 import tkinter as tk
 from tkinter import ttk
+
 import httpx
 import pyperclip
 
@@ -18,19 +19,21 @@ from .i18n import t
 
 logger = logging.getLogger(__name__)
 
-# ── Color Scheme (2026 Material Elevated Neutrals) ────────────────────
+# ── Color Scheme (Flat UI Dashboard) ──────────────────────────────────
 
-BG_PRIMARY = "#2b2d31"       # warm dark grey (not pure black)
-BG_SURFACE = "#383a40"       # elevated surface
-BG_CARD = "#404249"          # card/input background
-ACCENT = "#5dadec"           # soft sky blue
-ACCENT_HOVER = "#7abfff"     # lighter blue hover
-TEXT_PRIMARY = "#f2f3f5"     # warm white
-TEXT_SECONDARY = "#b5bac1"   # muted text
-TEXT_DIM = "#80848e"         # dimmed text
-SUCCESS = "#57d59f"          # mint green
-DANGER = "#ed4245"           # soft red
-BORDER = "#4e5058"           # subtle border
+NAVY = "#2c3e50"             # header/sidebar
+NAVY_LIGHT = "#34495e"       # header hover
+BG_PAGE = "#ecf0f1"          # page background
+BG_CARD = "#ffffff"          # card surface
+TEXT_DARK = "#2c3e50"        # primary text
+TEXT_MID = "#7f8c8d"         # secondary text
+TEXT_LIGHT = "#bdc3c7"       # dimmed text
+ACCENT = "#e67e22"           # orange accent (buttons)
+ACCENT_HOVER = "#d35400"     # darker orange hover
+SUCCESS = "#27ae60"          # green
+DANGER = "#e74c3c"           # red
+INFO = "#3498db"             # blue
+BORDER = "#dcdde1"           # card borders
 
 # ── Languages ─────────────────────────────────────────────────────────
 
@@ -56,12 +59,10 @@ Translate the following text to {language}.
 Return ONLY the translation, no explanations or commentary.
 Preserve formatting, line breaks, and punctuation style."""
 
-# Persisted settings
 _SETTINGS_FILE = APP_DIR / "translate_settings.json"
 
 
 def _load_settings() -> dict:
-    """Load all translate settings."""
     try:
         if _SETTINGS_FILE.exists():
             return json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
@@ -71,7 +72,6 @@ def _load_settings() -> dict:
 
 
 def _save_settings(updates: dict) -> None:
-    """Merge updates into translate settings file."""
     try:
         _SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
         data = _load_settings()
@@ -82,7 +82,7 @@ def _save_settings(updates: dict) -> None:
 
 
 class TranslateOverlay:
-    """Floating overlay window for quick translation."""
+    """Floating overlay for quick translation — flat UI dashboard style."""
 
     def __init__(self, groq_config: GroqConfig):
         self._groq = groq_config
@@ -93,20 +93,14 @@ class TranslateOverlay:
         self._deepl_rotation_idx = 0
 
     def show(self, text: str) -> None:
-        """Show overlay with text to translate."""
         if not text.strip():
             return
-
         self._source_text = text.strip()
-
-        # Close existing overlay if open
         self.hide()
-
         self._thread = threading.Thread(target=self._build_and_run, daemon=True)
         self._thread.start()
 
     def hide(self) -> None:
-        """Close overlay window."""
         if self._window:
             try:
                 self._window.destroy()
@@ -120,22 +114,18 @@ class TranslateOverlay:
             self._window = root
             root.title("Groq Translate")
             root.attributes("-topmost", True)
-            root.attributes("-alpha", 0.96)
-            root.configure(bg=BG_PRIMARY)
-            root.minsize(400, 300)
+            root.configure(bg=BG_PAGE)
+            root.minsize(450, 350)
 
-            # Load saved size or use defaults
+            # Load saved size
             settings = _load_settings()
-            w = settings.get("window_w", 620)
-            h = settings.get("window_h", 420)
+            w = settings.get("window_w", 640)
+            h = settings.get("window_h", 460)
             root.update_idletasks()
-            screen_w = root.winfo_screenwidth()
-            screen_h = root.winfo_screenheight()
-            x = (screen_w - w) // 2
-            y = (screen_h - h) // 2
-            root.geometry(f"{w}x{h}+{x}+{y}")
+            sx = (root.winfo_screenwidth() - w) // 2
+            sy = (root.winfo_screenheight() - h) // 2
+            root.geometry(f"{w}x{h}+{sx}+{sy}")
 
-            # Save size on close
             def on_close():
                 try:
                     _save_settings({
@@ -148,114 +138,130 @@ class TranslateOverlay:
 
             root.protocol("WM_DELETE_WINDOW", on_close)
 
-            # Main frame with padding
-            frame = tk.Frame(root, bg=BG_PRIMARY, padx=20, pady=14)
-            frame.pack(fill="both", expand=True)
+            # ── Header (navy bar) ───────────────────────────────────
+            header = tk.Frame(root, bg=NAVY, height=48)
+            header.pack(fill="x")
+            header.pack_propagate(False)
 
-            # ── Header ──────────────────────────────────────────────
-            header = tk.Frame(frame, bg=BG_PRIMARY)
-            header.pack(fill="x", pady=(0, 12))
-
-            # Title
             tk.Label(
-                header, text="Translate",
-                fg=ACCENT, bg=BG_PRIMARY, font=("Segoe UI", 13, "bold"),
+                header, text="\u2630  Groq Translate",
+                fg="white", bg=NAVY, font=("Segoe UI", 12, "bold"),
+                padx=16,
             ).pack(side="left")
 
-            # Close button
-            close_btn = tk.Label(
-                header, text="  \u2715  ", fg=TEXT_DIM, bg=BG_SURFACE,
-                font=("Segoe UI", 10), cursor="hand2",
-            )
-            close_btn.pack(side="right", padx=(8, 0))
-            close_btn.bind("<Button-1>", lambda e: on_close())
-            close_btn.bind("<Enter>", lambda e: close_btn.config(fg=DANGER, bg=BG_CARD))
-            close_btn.bind("<Leave>", lambda e: close_btn.config(fg=TEXT_DIM, bg=BG_SURFACE))
+            # Header buttons (right side)
+            btn_frame = tk.Frame(header, bg=NAVY)
+            btn_frame.pack(side="right", padx=8)
 
-            # Replace button — paste translation over original selected text
+            # Replace button
             replace_btn = tk.Label(
-                header, text="  Replace  ", fg=TEXT_SECONDARY, bg=BG_SURFACE,
-                font=("Segoe UI", 9), cursor="hand2",
+                btn_frame, text="  \u21c4 Replace  ",
+                fg="white", bg=ACCENT, font=("Segoe UI", 9, "bold"),
+                cursor="hand2", padx=8, pady=4,
             )
-            replace_btn.pack(side="right", padx=(6, 0))
-            replace_btn.bind("<Enter>", lambda e: replace_btn.config(fg=ACCENT_HOVER, bg=BG_CARD))
-            replace_btn.bind("<Leave>", lambda e: replace_btn.config(fg=TEXT_SECONDARY, bg=BG_SURFACE))
+            replace_btn.pack(side="left", padx=(0, 6), pady=8)
+            replace_btn.bind("<Enter>", lambda e: replace_btn.config(bg=ACCENT_HOVER))
+            replace_btn.bind("<Leave>", lambda e: replace_btn.config(bg=ACCENT))
 
             # Copy button
             copy_btn = tk.Label(
-                header, text="  Copy  ", fg=TEXT_SECONDARY, bg=BG_SURFACE,
-                font=("Segoe UI", 9), cursor="hand2",
+                btn_frame, text="  \u2398 Copy  ",
+                fg="white", bg=INFO, font=("Segoe UI", 9, "bold"),
+                cursor="hand2", padx=8, pady=4,
             )
-            copy_btn.pack(side="right", padx=(6, 0))
-            copy_btn.bind("<Enter>", lambda e: copy_btn.config(fg=SUCCESS, bg=BG_CARD))
-            copy_btn.bind("<Leave>", lambda e: copy_btn.config(fg=TEXT_SECONDARY, bg=BG_SURFACE))
+            copy_btn.pack(side="left", padx=(0, 6), pady=8)
+            copy_btn.bind("<Enter>", lambda e: copy_btn.config(bg="#2980b9"))
+            copy_btn.bind("<Leave>", lambda e: copy_btn.config(bg=INFO))
 
-            # Language selector
-            lang_frame = tk.Frame(header, bg=BG_PRIMARY)
-            lang_frame.pack(side="right", padx=(6, 0))
+            # ── Toolbar (language selector) ─────────────────────────
+            toolbar = tk.Frame(root, bg=BG_PAGE, padx=16, pady=10)
+            toolbar.pack(fill="x")
 
             tk.Label(
-                lang_frame, text="\u2192", fg=TEXT_DIM, bg=BG_PRIMARY,
-                font=("Segoe UI", 12),
-            ).pack(side="left", padx=(0, 6))
+                toolbar, text="Translate to:",
+                fg=TEXT_MID, bg=BG_PAGE, font=("Segoe UI", 10),
+            ).pack(side="left")
 
             lang_var = tk.StringVar()
             lang_names = [name for name, code in LANGUAGES]
+
+            style = ttk.Style()
+            style.configure("Translate.TCombobox", padding=4)
+
             lang_combo = ttk.Combobox(
-                lang_frame, textvariable=lang_var, values=lang_names,
-                width=12, state="readonly",
+                toolbar, textvariable=lang_var, values=lang_names,
+                width=14, state="readonly", style="Translate.TCombobox",
             )
-            # Set saved language
             for i, (name, code) in enumerate(LANGUAGES):
                 if code == self._target_lang:
                     lang_combo.current(i)
                     break
-            lang_combo.pack(side="left")
+            lang_combo.pack(side="left", padx=(8, 0))
 
-            # ── Source text ─────────────────────────────────────────
-            src_label = tk.Label(
-                frame, text="Original", fg=TEXT_DIM, bg=BG_PRIMARY,
-                font=("Segoe UI", 8), anchor="w",
-            )
-            src_label.pack(fill="x", pady=(0, 2))
+            # Engine indicator
+            engine_var = tk.StringVar(value="")
+            tk.Label(
+                toolbar, textvariable=engine_var,
+                fg=TEXT_LIGHT, bg=BG_PAGE, font=("Segoe UI", 8),
+            ).pack(side="right")
 
-            src_frame = tk.Frame(frame, bg=BG_SURFACE, padx=10, pady=8)
-            src_frame.pack(fill="x", pady=(0, 10))
+            # ── Content area ────────────────────────────────────────
+            content = tk.Frame(root, bg=BG_PAGE, padx=16)
+            content.pack(fill="both", expand=True)
+
+            # Source card
+            src_card = tk.Frame(content, bg=BG_CARD, bd=1, relief="solid",
+                                highlightbackground=BORDER, highlightthickness=1)
+            src_card.pack(fill="x", pady=(0, 8))
+
+            src_header = tk.Frame(src_card, bg=BG_CARD)
+            src_header.pack(fill="x", padx=12, pady=(8, 0))
+            tk.Label(
+                src_header, text="ORIGINAL",
+                fg=TEXT_LIGHT, bg=BG_CARD, font=("Segoe UI", 8, "bold"),
+            ).pack(side="left")
 
             src_text = tk.Text(
-                src_frame, height=4, wrap="word",
-                fg=TEXT_SECONDARY, bg=BG_SURFACE, font=("Segoe UI", 10),
-                borderwidth=0, highlightthickness=0, selectbackground=ACCENT,
+                src_card, height=4, wrap="word",
+                fg=TEXT_MID, bg=BG_CARD, font=("Segoe UI", 10),
+                borderwidth=0, highlightthickness=0, padx=12, pady=8,
+                selectbackground=INFO,
             )
-            src_text.insert("1.0", self._source_text[:1000])
+            src_text.insert("1.0", self._source_text[:2000])
             src_text.config(state="disabled")
             src_text.pack(fill="x")
 
-            # ── Translation result ──────────────────────────────────
-            result_label = tk.Label(
-                frame, text="Translation", fg=TEXT_DIM, bg=BG_PRIMARY,
-                font=("Segoe UI", 8), anchor="w",
-            )
-            result_label.pack(fill="x", pady=(0, 2))
+            # Translation card
+            result_card = tk.Frame(content, bg=BG_CARD, bd=1, relief="solid",
+                                   highlightbackground=BORDER, highlightthickness=1)
+            result_card.pack(fill="both", expand=True, pady=(0, 8))
 
-            result_frame = tk.Frame(frame, bg=BG_SURFACE, padx=10, pady=8)
-            result_frame.pack(fill="both", expand=True)
+            result_header = tk.Frame(result_card, bg=BG_CARD)
+            result_header.pack(fill="x", padx=12, pady=(8, 0))
+            tk.Label(
+                result_header, text="TRANSLATION",
+                fg=TEXT_LIGHT, bg=BG_CARD, font=("Segoe UI", 8, "bold"),
+            ).pack(side="left")
 
             result_text = tk.Text(
-                result_frame, wrap="word",
-                fg=TEXT_PRIMARY, bg=BG_SURFACE, font=("Segoe UI", 11),
-                borderwidth=0, highlightthickness=0, selectbackground=ACCENT,
+                result_card, wrap="word",
+                fg=TEXT_DARK, bg=BG_CARD, font=("Segoe UI", 11),
+                borderwidth=0, highlightthickness=0, padx=12, pady=8,
+                selectbackground=INFO,
             )
             result_text.insert("1.0", t("translate.loading"))
             result_text.config(state="disabled")
             result_text.pack(fill="both", expand=True)
 
             # ── Status bar ──────────────────────────────────────────
+            status_frame = tk.Frame(root, bg=BG_PAGE, padx=16, pady=(0, 8))
+            status_frame.pack(fill="x")
+
             status_var = tk.StringVar(value="")
             tk.Label(
-                frame, textvariable=status_var,
-                fg=TEXT_DIM, bg=BG_PRIMARY, font=("Segoe UI", 8), anchor="w",
-            ).pack(fill="x", pady=(6, 0))
+                status_frame, textvariable=status_var,
+                fg=TEXT_LIGHT, bg=BG_PAGE, font=("Segoe UI", 8), anchor="w",
+            ).pack(side="left")
 
             # ── Handlers ────────────────────────────────────────────
 
@@ -265,40 +271,30 @@ class TranslateOverlay:
                 result_text.config(state="disabled")
                 if text and text != t("translate.loading"):
                     pyperclip.copy(text)
-                    status_var.set(t("translate.copied"))
-                    copy_btn.config(fg=SUCCESS)
+                    status_var.set("\u2713 " + t("translate.copied"))
+                    copy_btn.config(bg=SUCCESS)
+                    root.after(2000, lambda: copy_btn.config(bg=INFO))
 
             copy_btn.bind("<Button-1>", do_copy)
 
             def do_replace(event=None):
-                """Replace original selected text with translation."""
                 result_text.config(state="normal")
                 translated = result_text.get("1.0", "end").strip()
                 result_text.config(state="disabled")
                 if not translated or translated == t("translate.loading"):
                     return
-
-                # Copy translation to clipboard
                 pyperclip.copy(translated)
-
-                # Close overlay first
                 on_close()
 
-                # Small delay, then paste (Ctrl+V) over the still-selected text
                 import ctypes
                 time.sleep(0.2)
-
                 user32 = ctypes.windll.user32
-                VK_CONTROL = 0x11
-                VK_V = 0x56
+                VK_CONTROL, VK_V = 0x11, 0x56
                 KEYEVENTF_KEYUP = 0x0002
-
-                # Ctrl+V
                 user32.keybd_event(VK_CONTROL, 0, 0, 0)
                 user32.keybd_event(VK_V, 0, 0, 0)
                 user32.keybd_event(VK_V, 0, KEYEVENTF_KEYUP, 0)
                 user32.keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0)
-
                 logger.info("Replaced selection with translation (%d chars)", len(translated))
 
             replace_btn.bind("<Button-1>", do_replace)
@@ -307,7 +303,6 @@ class TranslateOverlay:
                 if lang_name is None:
                     lang_name = lang_var.get()
 
-                # Save selected language
                 for name, code in LANGUAGES:
                     if name == lang_name:
                         self._target_lang = code
@@ -319,11 +314,12 @@ class TranslateOverlay:
                 result_text.insert("1.0", t("translate.loading"))
                 result_text.config(state="disabled")
                 status_var.set("")
+                engine_var.set("")
 
                 def _api_call():
                     try:
                         start = time.monotonic()
-                        translated = self._translate(self._source_text, lang_name)
+                        translated, engine = self._translate(self._source_text, lang_name)
                         elapsed = time.monotonic() - start
 
                         def _update():
@@ -332,6 +328,7 @@ class TranslateOverlay:
                             result_text.insert("1.0", translated)
                             result_text.config(state="disabled")
                             status_var.set(f"{elapsed:.1f}s  \u2022  {len(translated)} chars")
+                            engine_var.set(f"via {engine}")
 
                         root.after(0, _update)
 
@@ -343,6 +340,7 @@ class TranslateOverlay:
                             result_text.delete("1.0", "end")
                             result_text.insert("1.0", f"Error: {e}")
                             result_text.config(state="disabled")
+                            status_var.set("Failed")
 
                         root.after(0, _error)
 
@@ -354,7 +352,7 @@ class TranslateOverlay:
             lang_combo.bind("<<ComboboxSelected>>", on_lang_change)
 
             # Keyboard shortcuts
-            root.bind("<Escape>", lambda e: root.destroy())
+            root.bind("<Escape>", lambda e: on_close())
             root.bind("<Control-c>", do_copy)
 
             # Start first translation
@@ -367,9 +365,10 @@ class TranslateOverlay:
         finally:
             self._window = None
 
-    def _translate(self, text: str, target_language: str) -> str:
-        """Translate text using DeepL (primary, key rotation) with Groq LLM fallback."""
-        # Find language code
+    # ── Translation engines ─────────────────────────────────────────
+
+    def _translate(self, text: str, target_language: str) -> tuple[str, str]:
+        """Translate text. Returns (translated_text, engine_name)."""
         lang_code = "en"
         for name, code in LANGUAGES:
             if name == target_language:
@@ -379,45 +378,39 @@ class TranslateOverlay:
         # Try DeepL with key rotation
         keys = self._load_deepl_keys()
         if keys:
-            # Try each key starting from rotation index
             for attempt in range(len(keys)):
                 key = self._next_deepl_key(keys)
                 try:
                     result = self._translate_deepl(text, lang_code, key)
-                    logger.info("DeepL OK (key #%d)", (self._deepl_rotation_idx - 1) % len(keys) + 1)
-                    return result
+                    key_num = (self._deepl_rotation_idx - 1) % len(keys) + 1
+                    logger.info("DeepL OK (key #%d)", key_num)
+                    return result, f"DeepL #{key_num}"
                 except ValueError as e:
                     if "quota exceeded" in str(e).lower():
-                        logger.warning("DeepL key #%d quota exceeded, trying next",
-                                       (self._deepl_rotation_idx - 1) % len(keys) + 1)
+                        logger.warning("DeepL key quota exceeded, trying next")
                         continue
                     raise
                 except Exception as e:
-                    logger.warning("DeepL key #%d failed: %s",
-                                   (self._deepl_rotation_idx - 1) % len(keys) + 1, e)
+                    logger.warning("DeepL failed: %s", e)
                     continue
 
-            logger.warning("All %d DeepL keys exhausted, falling back to Groq", len(keys))
+            logger.warning("All DeepL keys exhausted, falling back to Groq")
 
         # Fallback to Groq LLM
-        return self._translate_groq(text, target_language)
+        result = self._translate_groq(text, target_language)
+        return result, "Groq LLM"
 
     def _load_deepl_keys(self) -> list[str]:
-        """Load all DeepL API keys from settings."""
         try:
-            if _SETTINGS_FILE.exists():
-                data = json.loads(_SETTINGS_FILE.read_text(encoding="utf-8"))
-                keys = data.get("deepl_keys", [])
-                # Migration: single key → list
-                if not keys and data.get("deepl_key"):
-                    keys = [data["deepl_key"]]
-                return [k for k in keys if k.strip()]
+            data = _load_settings()
+            keys = data.get("deepl_keys", [])
+            if not keys and data.get("deepl_key"):
+                keys = [data["deepl_key"]]
+            return [k for k in keys if k.strip()]
         except Exception:
-            pass
-        return []
+            return []
 
     def _next_deepl_key(self, keys: list[str]) -> str:
-        """Round-robin key rotation."""
         if not keys:
             return ""
         idx = self._deepl_rotation_idx % len(keys)
@@ -425,9 +418,7 @@ class TranslateOverlay:
         return keys[idx]
 
     def _translate_deepl(self, text: str, target_lang: str, api_key: str) -> str:
-        """Translate via DeepL API (free or pro)."""
         base_url = "https://api-free.deepl.com" if api_key.endswith(":fx") else "https://api.deepl.com"
-
         deepl_lang = target_lang.upper()
         lang_map = {"EN": "EN-US", "PT": "PT-BR", "ZH": "ZH-HANS"}
         deepl_lang = lang_map.get(deepl_lang, deepl_lang)
@@ -435,11 +426,7 @@ class TranslateOverlay:
         with httpx.Client(timeout=30.0) as client:
             resp = client.post(
                 f"{base_url}/v2/translate",
-                data={
-                    "auth_key": api_key,
-                    "text": text,
-                    "target_lang": deepl_lang,
-                },
+                data={"auth_key": api_key, "text": text, "target_lang": deepl_lang},
             )
             if resp.status_code == 456:
                 raise ValueError("DeepL quota exceeded for this key")
@@ -451,7 +438,6 @@ class TranslateOverlay:
             raise ValueError("No translations in DeepL response")
 
     def _translate_groq(self, text: str, target_language: str) -> str:
-        """Translate via Groq LLM (fallback)."""
         with httpx.Client(
             base_url="https://api.groq.com/openai/v1",
             headers={"Authorization": f"Bearer {self._groq.api_key}"},
@@ -462,10 +448,7 @@ class TranslateOverlay:
                 json={
                     "model": self._groq.llm_model,
                     "messages": [
-                        {
-                            "role": "system",
-                            "content": TRANSLATE_PROMPT.format(language=target_language),
-                        },
+                        {"role": "system", "content": TRANSLATE_PROMPT.format(language=target_language)},
                         {"role": "user", "content": text},
                     ],
                     "temperature": 0.3,
