@@ -622,11 +622,55 @@ class SettingsWindow:
             self._on_save()
 
         self._window.destroy()
-        restart = messagebox.askyesno(
-            "Groq Dictation",
-            t("settings.restart_prompt"),
-        )
-        if restart and self._on_save:
+
+        # Custom dark-aware restart dialog
+        dlg = tk.Tk()
+        dlg.title("Groq Dictation")
+        dlg.resizable(False, False)
+        dlg.attributes("-topmost", True)
+
+        try:
+            import sv_ttk
+            sv_ttk.set_theme("dark" if self._is_dark else "light")
+            if self._is_dark:
+                dlg.update()
+                try:
+                    import ctypes
+                    hwnd = ctypes.windll.user32.GetParent(dlg.winfo_id())
+                    ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                        hwnd, 20, ctypes.byref(ctypes.c_int(1)), 4)
+                except Exception:
+                    pass
+        except ImportError:
+            pass
+
+        dlg.geometry("400x140")
+        dlg.update_idletasks()
+        x = (dlg.winfo_screenwidth() - 400) // 2
+        y = (dlg.winfo_screenheight() - 140) // 2
+        dlg.geometry(f"+{x}+{y}")
+
+        ttk.Label(dlg, text=t("settings.restart_prompt"),
+                  font=("Segoe UI", 10), wraplength=360).pack(padx=20, pady=(20, 16))
+
+        btn_frame = ttk.Frame(dlg)
+        btn_frame.pack(pady=(0, 16))
+
+        result = {"restart": False}
+
+        def on_yes():
+            result["restart"] = True
+            dlg.destroy()
+
+        ttk.Button(btn_frame, text=t("settings.save"),
+                   command=on_yes, style="Accent.TButton").pack(side="left", padx=8)
+        ttk.Button(btn_frame, text=t("settings.cancel"),
+                   command=dlg.destroy).pack(side="left", padx=8)
+
+        dlg.protocol("WM_DELETE_WINDOW", dlg.destroy)
+        dlg.mainloop()
+
+        if result["restart"] and self._on_save:
             self._on_save(restart=True)
 
     def _write_config(self) -> None:
