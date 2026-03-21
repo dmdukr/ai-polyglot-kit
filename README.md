@@ -1,4 +1,4 @@
-# AI Polyglot Kit — Multi-Provider Voice AI for Windows
+# AI Polyglot Kit — Multi-Provider Voice and Translate AI for Windows
 
 System-wide dictation, text normalization, and translation for Windows — powered by 7 STT and 8+ LLM providers with automatic failover.
 
@@ -155,7 +155,7 @@ Found a bug? [Open an issue](https://github.com/dmdukr/ai-polyglot-kit/issues)
 
 ---
 
-# AI Polyglot Kit — Багатосервісний голосовий AI для Windows
+# AI Polyglot Kit — Багатосервісний голосовий та перекладацький AI для Windows
 
 Системний голосовий ввід, нормалізація тексту та переклад для Windows — 7 STT та 8+ LLM провайдерів з автоматичним перемиканням.
 
