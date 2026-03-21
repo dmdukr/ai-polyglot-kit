@@ -570,20 +570,27 @@ class TrayApp:
         """Show About dialog."""
         from .config import APP_VERSION
         import tkinter as tk
-        from tkinter import messagebox
-
         def _show():
             root = tk.Tk()
-            root.withdraw()
+            root.title(t("tray.about"))
             root.attributes("-topmost", True)
-            messagebox.showinfo(
-                t("tray.about"),
-                f"Groq Dictation v{APP_VERSION}\n\n"
-                f"Author: Dmytro Dubinko\n"
-                f"License: GPL-3.0\n\n"
-                f"github.com/dmdukr/groq-dictation",
-            )
-            root.destroy()
+            root.resizable(False, False)
+            root.geometry("300x180")
+            root.update_idletasks()
+            x = (root.winfo_screenwidth() - 300) // 2
+            y = (root.winfo_screenheight() - 180) // 2
+            root.geometry(f"+{x}+{y}")
+
+            tk.Label(
+                root, text=f"Groq Dictation v{APP_VERSION}",
+                font=("Segoe UI", 12, "bold"), pady=12,
+            ).pack()
+            tk.Label(
+                root, text="Author: Dmytro Dubinko\nLicense: GPL-3.0\n\ngithub.com/dmdukr/groq-dictation",
+                font=("Segoe UI", 10), justify="center",
+            ).pack()
+            tk.Button(root, text="OK", command=root.destroy, width=10).pack(pady=12)
+            root.mainloop()
 
         threading.Thread(target=_show, daemon=True).start()
 

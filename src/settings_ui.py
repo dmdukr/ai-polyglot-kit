@@ -206,7 +206,7 @@ class SettingsWindow:
             entry.grid(row=i, column=0, sticky="we", pady=1)
             self._deepl_entries.append(entry)
             usage_label = tk.Label(
-                deepl_frame, text="", fg="#888888", bg=deepl_frame.cget("background"),
+                deepl_frame, text="", fg="#888888",
                 font=("Segoe UI", 8), width=12, anchor="w",
             )
             usage_label.grid(row=i, column=1, padx=(4, 0))
