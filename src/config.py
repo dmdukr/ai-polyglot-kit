@@ -1,4 +1,4 @@
-"""Configuration management for Groq Dictation."""
+"""Configuration management for AI Polyglot Kit."""
 
 import os
 import logging
@@ -11,9 +11,9 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 # Default paths
-APP_VERSION = "3.0.2"
-APP_NAME = "GroqDictation"
-GITHUB_REPO = "dmdukr/groq-dictation"  # owner/repo for auto-update
+APP_VERSION = "4.0.0"
+APP_NAME = "AIPolyglotKit"
+GITHUB_REPO = "dmdukr/groq-dictation"  # owner/repo for auto-update (keep until repo renamed)
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME
 DEFAULT_CONFIG_PATH = Path("config.yaml")
 

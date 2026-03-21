@@ -1,10 +1,9 @@
-"""Groq Dictation — Windows system-wide Speech-to-Text service.
+"""AI Polyglot Kit — Windows system-wide Speech-to-Text service.
 
 Entry point: bootstraps config, engine, and tray app.
 """
 
 import sys
-import os
 import logging
 import faulthandler
 import tempfile
@@ -98,7 +97,7 @@ def main() -> None:
         )
     threading.excepthook = _thread_excepthook
 
-    logger.info("Groq Dictation starting...")
+    logger.info("AI Polyglot Kit starting...")
 
     # ── CRITICAL: Disable GC globally ──
     # Python 3.13 has a bug where GC firing during abc.__subclasscheck__
@@ -139,7 +138,7 @@ def main() -> None:
     finally:
         engine._telemetry.app_stop()
         engine.shutdown()
-        logger.info("Groq Dictation stopped")
+        logger.info("AI Polyglot Kit stopped")
 
 
 if __name__ == "__main__":

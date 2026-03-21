@@ -1,4 +1,4 @@
-"""System tray application for Groq Dictation."""
+"""System tray application for AI Polyglot Kit."""
 
 import logging
 import os
@@ -71,7 +71,7 @@ def _create_mic_icon(color: str, size: int = 64) -> Image.Image:
 
 
 class TrayApp:
-    """System tray application managing the Groq Dictation lifecycle."""
+    """System tray application managing the AI Polyglot Kit lifecycle."""
 
     def __init__(self, engine: DictationEngine, config: AppConfig):
         self._engine = engine
@@ -520,7 +520,7 @@ class TrayApp:
                 pass
             self._icon.notify(
                 t("notify.update_available", version=version),
-                "Groq Dictation",
+                "AI Polyglot Kit",
             )
 
     def _on_update_click(self, _icon=None, _item=None) -> None:
@@ -537,7 +537,7 @@ class TrayApp:
             def _check():
                 result = self._updater.check_now()
                 if not result and self._icon:
-                    self._icon.notify("No updates available", "Groq Dictation")
+                    self._icon.notify("No updates available", "AI Polyglot Kit")
             threading.Thread(target=_check, daemon=True).start()
 
     def _on_restart_click(self, _icon=None, _item=None) -> None:
@@ -589,7 +589,7 @@ class TrayApp:
             frame.pack(fill="both", expand=True)
 
             about_ttk.Label(
-                frame, text=f"Groq Dictation v{APP_VERSION}",
+                frame, text=f"AI Polyglot Kit v{APP_VERSION}",
                 font=("Segoe UI", 12, "bold"),
             ).pack(pady=(0, 12))
             about_ttk.Label(

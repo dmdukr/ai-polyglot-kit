@@ -49,8 +49,8 @@ _STRINGS: dict[str, dict[str, str]] = {
         "uk": "Вихід",
     },
     "tray.title": {
-        "en": "Groq Dictation",
-        "uk": "Groq Dictation",
+        "en": "AI Polyglot Kit",
+        "uk": "AI Polyglot Kit",
     },
     "tray.mic": {
         "en": "Mic",
@@ -87,14 +87,14 @@ _STRINGS: dict[str, dict[str, str]] = {
         "uk": "Доступне оновлення: v{version}",
     },
     "notify.already_running": {
-        "en": "Groq Dictation is already running.",
-        "uk": "Groq Dictation вже запущено.",
+        "en": "AI Polyglot Kit is already running.",
+        "uk": "AI Polyglot Kit вже запущено.",
     },
 
     # ── Settings window ──────────────────────────────────────────
     "settings.title": {
-        "en": "Groq Dictation — Settings",
-        "uk": "Groq Dictation — Налаштування",
+        "en": "AI Polyglot Kit — Settings",
+        "uk": "AI Polyglot Kit — Налаштування",
     },
     "settings.tab_api": {
         "en": "API",

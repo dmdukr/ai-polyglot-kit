@@ -37,7 +37,7 @@ def _get_autostart() -> bool:
 def _cleanup_duplicate_autostart() -> None:
     """Remove duplicate autostart entries (installer vs app name mismatch)."""
     # Installer used "Groq Dictation" (with space), app uses "GroqDictation"
-    alt_names = ["Groq Dictation", "GroqDictation"]
+    alt_names = ["Groq Dictation", "GroqDictation", "AI Polyglot Kit", "AIPolyglotKit"]
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, _REG_RUN_KEY, 0,
                             winreg.KEY_SET_VALUE | winreg.KEY_READ) as key:
@@ -603,7 +603,7 @@ class SettingsWindow:
 
         # Custom dark-aware restart dialog
         dlg = tk.Tk()
-        dlg.title("Groq Dictation")
+        dlg.title("AI Polyglot Kit")
         dlg.resizable(False, False)
         dlg.attributes("-topmost", True)
         dlg.geometry("400x140")

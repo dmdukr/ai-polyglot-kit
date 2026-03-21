@@ -1,8 +1,8 @@
 ; Inno Setup script for Groq Dictation
 ; Requires Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
 
-#define MyAppName "Groq Dictation"
-#define MyAppVersion "3.0.2"
+#define MyAppName "AI Polyglot Kit"
+#define MyAppVersion "4.0.0"
 #define MyAppPublisher "dmdukr"
 #define MyAppURL "https://github.com/dmdukr/groq-dictation"
 #define MyAppExeName "GroqDictation.exe"
