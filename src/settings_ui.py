@@ -122,7 +122,22 @@ class SettingsWindow:
             self._window.configure(bg="#1c1c1c")
             self._window.update_idletasks()
             set_dwm_dark_title_bar(self._window)
-            self._dark_bg = "#1c1c1c"
+            # Override sv_ttk dark backgrounds to be darker
+            style = ttk.Style()
+            dark_bg = "#1c1c1c"
+            style.configure("TFrame", background=dark_bg)
+            style.configure("TLabelframe", background=dark_bg)
+            style.configure("TLabelframe.Label", background=dark_bg, foreground="#ffffff")
+            style.configure("TNotebook", background=dark_bg)
+            style.configure("TNotebook.Tab", background="#2d2d2d")
+            style.map("TNotebook.Tab",
+                      background=[("selected", dark_bg), ("!selected", "#2d2d2d")])
+            style.configure("TLabel", background=dark_bg, foreground="#ffffff")
+            style.configure("TCheckbutton", background=dark_bg, foreground="#ffffff")
+            style.configure("TRadiobutton", background=dark_bg, foreground="#ffffff")
+            style.configure("TScale", background=dark_bg)
+            style.configure("TSeparator", background="#3d3d3d")
+            self._dark_bg = dark_bg
             self._dark_fg = "#ffffff"
             self._dark_fg2 = "#9e9e9e"
         else:
@@ -561,6 +576,14 @@ class SettingsWindow:
 
     def _save(self) -> None:
         """Save settings to config and YAML file."""
+        try:
+            self._save_inner()
+        except Exception as e:
+            logger.error(f"Save failed: {e}", exc_info=True)
+            from tkinter import messagebox
+            messagebox.showerror("Error", f"Save failed: {e}")
+
+    def _save_inner(self) -> None:
         from .provider_manager import ProviderManager
         from .providers import detect_provider, get_provider_base_url
 
@@ -729,10 +752,9 @@ class SettingsWindow:
         return load_translate_settings().get("theme", "auto")
 
     def _save_deepl_key(self) -> None:
-        """Save all DeepL API keys and theme to translate_settings.json."""
-        keys = [v.get().strip() for v in self._deepl_key_vars]
+        """Save theme preference to translate_settings.json.
+        DeepL keys are now managed via provider slots (Translation tab)."""
         save_translate_settings({
-            "deepl_keys": [k for k in keys if k],
             "theme": self._theme_var.get(),
         })
-        logger.info("DeepL keys + theme saved")
+        logger.info("Theme preference saved")
