@@ -115,11 +115,12 @@ class SettingsWindow:
         try:
             import sv_ttk
             sv_ttk.set_theme("dark" if self._is_dark else "light")
-            if self._is_dark:
-                self._window.update()
-                set_dwm_dark_title_bar(self._window)
         except ImportError:
             pass
+
+        if self._is_dark:
+            self._window.update_idletasks()
+            set_dwm_dark_title_bar(self._window)
 
         # Colors for manually created tk widgets (hints, usage labels)
         if self._is_dark:
@@ -656,23 +657,20 @@ class SettingsWindow:
         if self._on_save:
             self._on_save()
 
-        self._window.destroy()
+        # Restart dialog as Toplevel (same Tk root, no theme conflicts)
+        self._window.withdraw()  # hide settings, keep Tk root alive
 
-        # Custom dark-aware restart dialog
-        dlg = tk.Tk()
-        dlg.withdraw()
+        result = {"restart": False}
+
+        dlg = tk.Toplevel(self._window)
         dlg.title("AI Polyglot Kit")
         dlg.resizable(False, False)
-        dlg.geometry("400x140")
+        dlg.transient(self._window)
+        dlg.grab_set()
 
-        try:
-            import sv_ttk
-            sv_ttk.set_theme("dark" if self._is_dark else "light")
-            if self._is_dark:
-                dlg.update()
-                set_dwm_dark_title_bar(dlg)
-        except ImportError:
-            pass
+        if self._is_dark:
+            dlg.update()
+            set_dwm_dark_title_bar(dlg)
 
         ttk.Label(dlg, text=t("settings.restart_prompt"),
                   font=("Segoe UI", 10), wraplength=360).pack(padx=20, pady=(20, 16))
@@ -680,25 +678,27 @@ class SettingsWindow:
         btn_frame = ttk.Frame(dlg)
         btn_frame.pack(pady=(0, 16))
 
-        result = {"restart": False}
-
         def on_yes():
             result["restart"] = True
             dlg.destroy()
+            self._window.destroy()
+
+        def on_no():
+            dlg.destroy()
+            self._window.destroy()
 
         ttk.Button(btn_frame, text=t("settings.save"),
                    command=on_yes, style="Accent.TButton").pack(side="left", padx=8)
         ttk.Button(btn_frame, text=t("settings.cancel"),
-                   command=dlg.destroy).pack(side="left", padx=8)
+                   command=on_no).pack(side="left", padx=8)
 
-        dlg.protocol("WM_DELETE_WINDOW", dlg.destroy)
+        dlg.protocol("WM_DELETE_WINDOW", on_no)
         dlg.update_idletasks()
         x = (dlg.winfo_screenwidth() - dlg.winfo_width()) // 2
         y = (dlg.winfo_screenheight() - dlg.winfo_height()) // 2
         dlg.geometry(f"+{x}+{y}")
         dlg.attributes("-topmost", True)
-        dlg.deiconify()
-        dlg.mainloop()
+        dlg.wait_window()
 
         if result["restart"] and self._on_save:
             self._on_save(restart=True)

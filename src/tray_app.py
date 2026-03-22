@@ -576,11 +576,11 @@ class TrayApp:
             try:
                 import sv_ttk
                 sv_ttk.set_theme("dark" if is_dark else "light")
-                if is_dark:
-                    root.update()
-                    set_dwm_dark_title_bar(root)
             except ImportError:
                 pass
+            if is_dark:
+                root.update_idletasks()
+                set_dwm_dark_title_bar(root)
 
             frame = about_ttk.Frame(root, padding=20)
             frame.pack(fill="both", expand=True)
