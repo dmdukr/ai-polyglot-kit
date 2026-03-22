@@ -15,6 +15,7 @@ import pyperclip
 
 from .config import GroqConfig
 from .i18n import t
+from .provider_manager import ProviderManager
 from .utils import detect_windows_theme, load_translate_settings, save_translate_settings, load_deepl_keys
 
 logger = logging.getLogger(__name__)
@@ -97,8 +98,9 @@ Preserve formatting, line breaks, and punctuation style."""
 class TranslateOverlay:
     """Floating overlay for quick translation — flat UI dashboard style."""
 
-    def __init__(self, groq_config: GroqConfig):
+    def __init__(self, groq_config: GroqConfig, provider_manager: ProviderManager | None = None):
         self._groq = groq_config
+        self._provider_manager = provider_manager
         self._window: tk.Tk | None = None
         self._thread: threading.Thread | None = None
         self._source_text = ""
@@ -126,20 +128,20 @@ class TranslateOverlay:
 
     def _build_and_run(self) -> None:
         try:
-            # Get theme (auto/light/dark)
             T = _get_theme()
 
             root = tk.Tk()
             self._window = root
-            root.title("Groq Translate")
+            root.title("AI Polyglot Kit — Translate")
             root.attributes("-topmost", True)
+            root.overrideredirect(False)
             root.configure(bg=T["bg"])
-            root.minsize(450, 350)
+            root.minsize(420, 320)
 
             # Load saved size
             settings = load_translate_settings()
-            w = settings.get("window_w", 640)
-            h = settings.get("window_h", 460)
+            w = settings.get("window_w", 500)
+            h = settings.get("window_h", 400)
             root.update_idletasks()
             sx = (root.winfo_screenwidth() - w) // 2
             sy = (root.winfo_screenheight() - h) // 2
@@ -157,124 +159,84 @@ class TranslateOverlay:
 
             root.protocol("WM_DELETE_WINDOW", on_close)
 
-            # ── Header ──────────────────────────────────────────────
-            header = tk.Frame(root, bg=T["header"], height=48)
-            header.pack(fill="x")
-            header.pack_propagate(False)
+            # ── Top bar: Translate tab + language selector ───────────
+            top_bar = tk.Frame(root, bg=T["header"], height=44)
+            top_bar.pack(fill="x")
+            top_bar.pack_propagate(False)
 
-            tk.Label(
-                header, text="\u2630  Groq Translate",
-                fg=T["header_text"], bg=T["header"], font=("Segoe UI", 12, "bold"),
-                padx=16,
-            ).pack(side="left")
-
-            # Header buttons
-            btn_frame = tk.Frame(header, bg=T["header"])
-            btn_frame.pack(side="right", padx=8)
-
-            replace_btn = tk.Label(
-                btn_frame, text="  \u21c4 Replace  ",
-                fg=T["btn_text"], bg=T["accent"], font=("Segoe UI", 9, "bold"),
-                cursor="hand2", padx=10, pady=6,
+            # "Translate" tab button (always active)
+            tab_btn = tk.Label(
+                top_bar, text=" \U0001F5E8 Translate ",
+                fg=T["btn_text"], bg=T["accent"],
+                font=("Segoe UI", 10, "bold"), padx=12, pady=8,
             )
-            replace_btn.pack(side="left", padx=(0, 8), pady=8)
-            replace_btn.bind("<Enter>", lambda e: replace_btn.config(bg=T["accent_hover"]))
-            replace_btn.bind("<Leave>", lambda e: replace_btn.config(bg=T["accent"]))
+            tab_btn.pack(side="left", padx=(8, 0), pady=6)
 
-            copy_btn = tk.Label(
-                btn_frame, text="  \u2398 Copy  ",
-                fg=T["btn_text"], bg=T["info"], font=("Segoe UI", 9, "bold"),
-                cursor="hand2", padx=10, pady=6,
-            )
-            copy_btn.pack(side="left", padx=(0, 8), pady=8)
-            copy_btn.bind("<Enter>", lambda e: copy_btn.config(bg=T["accent_hover"]))
-            copy_btn.bind("<Leave>", lambda e: copy_btn.config(bg=T["info"]))
-
-            # ── Toolbar ─────────────────────────────────────────────
-            toolbar = tk.Frame(root, bg=T["bg"], padx=16, pady=10)
-            toolbar.pack(fill="x")
-
+            # Engine label (right side)
+            engine_var = tk.StringVar(value="")
             tk.Label(
-                toolbar, text="Translate to:",
-                fg=T["text_mid"], bg=T["bg"], font=("Segoe UI", 10),
-            ).pack(side="left")
+                top_bar, textvariable=engine_var,
+                fg=T["text_dim"], bg=T["header"], font=("Segoe UI", 8),
+            ).pack(side="right", padx=12)
+
+            # ── Language selector row ────────────────────────────────
+            lang_row = tk.Frame(root, bg=T["bg"], padx=12, pady=8)
+            lang_row.pack(fill="x")
 
             lang_var = tk.StringVar()
             lang_names = [name for name, code in LANGUAGES]
 
             lang_combo = ttk.Combobox(
-                toolbar, textvariable=lang_var, values=lang_names,
-                width=14, state="readonly",
+                lang_row, textvariable=lang_var, values=lang_names,
+                width=16, state="readonly", font=("Segoe UI", 10),
             )
             for i, (name, code) in enumerate(LANGUAGES):
                 if code == self._target_lang:
                     lang_combo.current(i)
                     break
-            lang_combo.pack(side="left", padx=(8, 0))
+            lang_combo.pack(side="left")
 
-            engine_var = tk.StringVar(value="")
+            status_var = tk.StringVar(value="")
             tk.Label(
-                toolbar, textvariable=engine_var,
+                lang_row, textvariable=status_var,
                 fg=T["text_dim"], bg=T["bg"], font=("Segoe UI", 8),
             ).pack(side="right")
 
-            # ── Content ─────────────────────────────────────────────
-            content = tk.Frame(root, bg=T["bg"], padx=16)
-            content.pack(fill="both", expand=True)
-
-            # Source card
-            src_card = tk.Frame(content, bg=T["card"], bd=1, relief="solid",
-                                highlightbackground=T["border"], highlightthickness=1)
-            src_card.pack(fill="x", pady=(0, 8))
-
-            src_header = tk.Frame(src_card, bg=T["card"])
-            src_header.pack(fill="x", padx=12, pady=(8, 0))
-            tk.Label(
-                src_header, text="ORIGINAL",
-                fg=T["text_dim"], bg=T["card"], font=("Segoe UI", 8, "bold"),
-            ).pack(side="left")
-
-            src_text = tk.Text(
-                src_card, height=4, wrap="word",
-                fg=T["text_mid"], bg=T["card_input"], font=("Segoe UI", 10),
-                borderwidth=0, highlightthickness=0, padx=12, pady=8,
-                selectbackground=T["accent"],
-            )
-            src_text.insert("1.0", self._source_text[:2000])
-            src_text.config(state="disabled")
-            src_text.pack(fill="x")
-
-            # Translation card
-            result_card = tk.Frame(content, bg=T["card"], bd=1, relief="solid",
-                                   highlightbackground=T["border"], highlightthickness=1)
-            result_card.pack(fill="both", expand=True, pady=(0, 8))
-
-            result_header = tk.Frame(result_card, bg=T["card"])
-            result_header.pack(fill="x", padx=12, pady=(8, 0))
-            tk.Label(
-                result_header, text="TRANSLATION",
-                fg=T["text_dim"], bg=T["card"], font=("Segoe UI", 8, "bold"),
-            ).pack(side="left")
+            # ── Translation result area ──────────────────────────────
+            text_frame = tk.Frame(root, bg=T["border"], padx=1, pady=1)
+            text_frame.pack(fill="both", expand=True, padx=12, pady=(0, 8))
 
             result_text = tk.Text(
-                result_card, wrap="word",
-                fg=T["text"], bg=T["card_input"], font=("Segoe UI", 11),
-                borderwidth=0, highlightthickness=0, padx=12, pady=8,
-                selectbackground=T["accent"],
+                text_frame, wrap="word",
+                fg=T["text"], bg=T["card"], font=("Segoe UI", 11),
+                borderwidth=0, highlightthickness=0, padx=12, pady=10,
+                selectbackground=T["accent"], insertbackground=T["text"],
             )
             result_text.insert("1.0", t("translate.loading"))
             result_text.config(state="disabled")
             result_text.pack(fill="both", expand=True)
 
-            # ── Status bar ──────────────────────────────────────────
-            status_frame = tk.Frame(root, bg=T["bg"], padx=16)
-            status_frame.pack(fill="x", pady=(0, 8))
+            # ── Bottom buttons bar ───────────────────────────────────
+            btn_bar = tk.Frame(root, bg=T["bg"], padx=12, pady=8)
+            btn_bar.pack(fill="x")
 
-            status_var = tk.StringVar(value="")
-            tk.Label(
-                status_frame, textvariable=status_var,
-                fg=T["text_dim"], bg=T["bg"], font=("Segoe UI", 8), anchor="w",
-            ).pack(side="left")
+            # Helper to make styled buttons
+            def _make_btn(parent, text, bg_color, hover_color, side="left"):
+                btn = tk.Label(
+                    parent, text=text,
+                    fg=T["text"] if bg_color == T["bg"] else T["btn_text"],
+                    bg=bg_color, font=("Segoe UI", 9),
+                    cursor="hand2", padx=14, pady=7,
+                    bd=1, relief="solid",
+                    highlightbackground=T["border"], highlightthickness=1,
+                )
+                btn.pack(side=side, padx=(0, 6) if side == "left" else (6, 0))
+                btn.bind("<Enter>", lambda e, b=btn, c=hover_color: b.config(bg=c))
+                btn.bind("<Leave>", lambda e, b=btn, c=bg_color: b.config(bg=c))
+                return btn
+
+            copy_btn = _make_btn(btn_bar, "\U0001F4CB  Копіювати", T["card"], T["border"])
+            replace_btn = _make_btn(btn_bar, "\u21B5  Замінити", T["accent"], T["accent_hover"], side="right")
 
             # ── Handlers ────────────────────────────────────────────
 
@@ -285,8 +247,8 @@ class TranslateOverlay:
                 if text and text != t("translate.loading"):
                     pyperclip.copy(text)
                     status_var.set("\u2713 " + t("translate.copied"))
-                    copy_btn.config(bg=T["success"])
-                    root.after(2000, lambda: copy_btn.config(bg=T["info"]))
+                    copy_btn.config(bg=T["success"], fg=T["btn_text"])
+                    root.after(2000, lambda: copy_btn.config(bg=T["card"], fg=T["text"]))
 
             copy_btn.bind("<Button-1>", do_copy)
 
@@ -340,7 +302,7 @@ class TranslateOverlay:
                             result_text.delete("1.0", "end")
                             result_text.insert("1.0", translated)
                             result_text.config(state="disabled")
-                            status_var.set(f"{elapsed:.1f}s  \u2022  {len(translated)} chars")
+                            status_var.set(f"{elapsed:.1f}s \u2022 {len(translated)} chars")
                             engine_var.set(f"via {engine}")
 
                         root.after(0, _update)
@@ -348,11 +310,16 @@ class TranslateOverlay:
                     except Exception as exc:
                         logger.error("Translation failed: %s", exc)
                         err_msg = str(exc)
+                        # User-friendly error messages
+                        if "Illegal header" in err_msg or "Bearer" in err_msg:
+                            err_msg = "API ключ не налаштовано. Відкрийте Налаштування → Переклад"
+                        elif "No translation" in err_msg:
+                            err_msg = "Не налаштовано жодного сервісу перекладу"
 
                         def _error(msg=err_msg):
                             result_text.config(state="normal")
                             result_text.delete("1.0", "end")
-                            result_text.insert("1.0", f"Error: {msg}")
+                            result_text.insert("1.0", msg)
                             result_text.config(state="disabled")
                             status_var.set("Failed")
 
@@ -410,9 +377,25 @@ class TranslateOverlay:
 
             logger.warning("All DeepL keys exhausted, falling back to Groq")
 
-        # Fallback to Groq LLM
-        result = self._translate_groq(text, target_language)
-        return result, "Groq LLM"
+        # Fallback to translation LLM via ProviderManager
+        if self._provider_manager:
+            llm = self._provider_manager.get_translation_llm()
+            if llm:
+                try:
+                    result = llm.chat([
+                        {"role": "system", "content": TRANSLATE_PROMPT.format(language=target_language)},
+                        {"role": "user", "content": text},
+                    ], temperature=0.3)
+                    return result, "LLM"
+                except Exception as e:
+                    logger.warning("Translation LLM failed: %s", e)
+
+        # Legacy fallback to groq.api_key
+        if self._groq.api_key:
+            result = self._translate_groq(text, target_language)
+            return result, "Groq LLM"
+
+        raise ValueError("Не налаштовано жодного сервісу перекладу. Додайте API ключ у Налаштування → Переклад")
 
 
     def _next_deepl_key(self, keys: list[str]) -> str:

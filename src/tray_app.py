@@ -99,7 +99,7 @@ class TrayApp:
         self._pending_update: dict | None = None
 
         # Quick translate (double Ctrl+C)
-        self._translator = TranslateOverlay(config.groq)
+        self._translator = TranslateOverlay(config.groq, self._engine.get_provider_manager())
         self._last_ctrl_c_time: float = 0
 
     def run(self) -> None:
