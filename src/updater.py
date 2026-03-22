@@ -76,7 +76,7 @@ class Updater:
                     logger.info("Removed old update file: %s", installer_path)
                 except OSError:
                     # File locked — use unique name
-                    installer_path = download_dir / f"GroqDictation_{int(time.time())}.exe"
+                    installer_path = download_dir / f"AIPolyglotKit_{int(time.time())}.exe"
                     logger.info("Old file locked, using: %s", installer_path)
 
             logger.info("Downloading update: %s", download_url)

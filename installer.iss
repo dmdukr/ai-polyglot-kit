@@ -2,10 +2,10 @@
 ; Requires Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
 
 #define MyAppName "AI Polyglot Kit"
-#define MyAppVersion "4.0.8"
+#define MyAppVersion "4.0.9"
 #define MyAppPublisher "dmdukr"
-#define MyAppURL "https://github.com/dmdukr/groq-dictation"
-#define MyAppExeName "GroqDictation.exe"
+#define MyAppURL "https://github.com/dmdukr/ai-polyglot-kit"
+#define MyAppExeName "AIPolyglotKit.exe"
 
 [Setup]
 AppId={{B7F3A8D1-2E5C-4A9B-8D1F-3C6E9A7B5D2F}
@@ -18,7 +18,7 @@ DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=installer_output
-OutputBaseFilename=GroqDictation-{#MyAppVersion}-setup
+OutputBaseFilename=AIPolyglotKit-{#MyAppVersion}-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -34,7 +34,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 ; Onedir mode: copy entire dist\GroqDictation\ folder
-Source: "dist\GroqDictation\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "dist\AIPolyglotKit\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "config.yaml"; DestDir: "{app}"; Flags: ignoreversion onlyifdoesntexist
 
 [Icons]

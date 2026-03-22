@@ -114,7 +114,10 @@ class SettingsWindow:
 
         try:
             import sv_ttk
-            sv_ttk.set_theme("dark" if self._is_dark else "light")
+            # Force re-apply theme (clean slate for second+ opens)
+            sv_ttk.set_theme("light")
+            if self._is_dark:
+                sv_ttk.set_theme("dark")
         except ImportError:
             pass
 
@@ -358,7 +361,7 @@ class SettingsWindow:
             stt: If True, filter models for STT (whisper).
             translation: If True, include DeepL in provider list.
         """
-        from .providers import detect_provider, fetch_models, ALL_STT_PROVIDERS, ALL_LLM_PROVIDERS
+        from .providers import detect_provider, fetch_models, ALL_STT_PROVIDERS, ALL_LLM_PROVIDERS, ALL_TRANSLATION_PROVIDERS
 
         # Hint + README link
         hint_frame = ttk.Frame(parent)
@@ -379,9 +382,12 @@ class SettingsWindow:
         link.bind("<Button-1>", _open_link)
 
         slot_widgets = []
-        provider_list = list(ALL_STT_PROVIDERS) if stt else list(ALL_LLM_PROVIDERS)
-        if translation:
-            provider_list.insert(0, "DeepL")
+        if stt:
+            provider_list = list(ALL_STT_PROVIDERS)
+        elif translation:
+            provider_list = list(ALL_TRANSLATION_PROVIDERS)
+        else:
+            provider_list = list(ALL_LLM_PROVIDERS)
 
         for idx in range(3):
             slot_data = slots_config[idx] if idx < len(slots_config) else {}
@@ -699,7 +705,8 @@ class SettingsWindow:
         dlg.grab_set()
 
         if self._is_dark:
-            dlg.update()
+            dlg.configure(bg="#1c1c1c")
+            dlg.update_idletasks()
             set_dwm_dark_title_bar(dlg)
 
         ttk.Label(dlg, text=t("settings.restart_prompt"),

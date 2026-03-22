@@ -48,6 +48,7 @@ STT_PROVIDERS: dict[str, ProviderInfo] = {
 # All known provider names (for UI dropdowns)
 ALL_STT_PROVIDERS = ["Groq", "OpenAI", "Soniox", "Deepgram", "Gladia", "Speechmatics", "AssemblyAI"]
 ALL_LLM_PROVIDERS = ["Groq", "Google AI Studio", "OpenAI", "Cerebras", "OpenRouter", "xAI", "GitHub Models"]
+ALL_TRANSLATION_PROVIDERS = ["DeepL", "Groq", "Google AI Studio", "OpenAI", "Cerebras", "OpenRouter", "xAI", "GitHub Models"]
 
 
 def detect_provider(api_key: str) -> ProviderInfo | None:
@@ -57,7 +58,17 @@ def detect_provider(api_key: str) -> ProviderInfo | None:
     for prefix, info in PROVIDER_REGISTRY:
         if api_key.startswith(prefix):
             return info
+    # DeepL: UUID format with optional :fx suffix
+    if api_key.endswith(":fx") or _is_deepl_key(api_key):
+        return ProviderInfo("DeepL", "https://api-free.deepl.com/v2", supports_stt=False, supports_llm=False)
     return None
+
+
+def _is_deepl_key(key: str) -> bool:
+    """Check if key looks like a DeepL API key (UUID format)."""
+    import re
+    # DeepL keys: UUID with optional :fx suffix
+    return bool(re.match(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(:[a-z]+)?$', key))
 
 
 def get_provider_base_url(provider_name: str) -> str:
