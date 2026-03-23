@@ -10,13 +10,13 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
-import httpx
 import pyperclip
 
 from .config import GroqConfig
 from .i18n import t
 from .provider_manager import ProviderManager
-from .utils import detect_windows_theme, load_translate_settings, save_translate_settings, load_deepl_keys
+from .translate_engine import TranslateEngine, LANGUAGES
+from .utils import detect_windows_theme, load_translate_settings, save_translate_settings
 
 logger = logging.getLogger(__name__)
 
@@ -69,30 +69,6 @@ def _get_theme() -> dict:
     else:  # auto
         return THEME_LIGHT if detect_windows_theme() == "light" else THEME_DARK
 
-# ── Languages ─────────────────────────────────────────────────────────
-
-LANGUAGES = [
-    ("English", "en"),
-    ("Ukrainian", "uk"),
-    ("Russian", "ru"),
-    ("German", "de"),
-    ("French", "fr"),
-    ("Spanish", "es"),
-    ("Polish", "pl"),
-    ("Italian", "it"),
-    ("Portuguese", "pt"),
-    ("Japanese", "ja"),
-    ("Chinese", "zh"),
-    ("Korean", "ko"),
-    ("Turkish", "tr"),
-    ("Arabic", "ar"),
-]
-
-TRANSLATE_PROMPT = """\
-Translate the following text to {language}.
-Return ONLY the translation, no explanations or commentary.
-Preserve formatting, line breaks, and punctuation style."""
-
 
 
 class TranslateOverlay:
@@ -101,10 +77,10 @@ class TranslateOverlay:
     def __init__(self, groq_config: GroqConfig, provider_manager: ProviderManager | None = None):
         self._groq = groq_config
         self._provider_manager = provider_manager
+        self._engine = TranslateEngine(provider_manager=provider_manager, groq_config=groq_config)
         self._window: tk.Toplevel | None = None
         self._source_text = ""
         self._target_lang = load_translate_settings().get("target_lang", "en")
-        self._deepl_rotation_idx = 0
 
     def show(self, text: str) -> None:
         if not text.strip():
@@ -346,104 +322,8 @@ class TranslateOverlay:
             logger.error(f"Translate overlay error: {e}")
             self._window = None
 
-    # ── Translation engines ─────────────────────────────────────────
+    # ── Translation (delegated to TranslateEngine) ─────────────────
 
     def _translate(self, text: str, target_language: str) -> tuple[str, str]:
         """Translate text. Returns (translated_text, engine_name)."""
-        lang_code = "en"
-        for name, code in LANGUAGES:
-            if name == target_language:
-                lang_code = code
-                break
-
-        # Try DeepL with key rotation
-        keys = load_deepl_keys()
-        if keys:
-            for attempt in range(len(keys)):
-                key = self._next_deepl_key(keys)
-                try:
-                    result = self._translate_deepl(text, lang_code, key)
-                    key_num = (self._deepl_rotation_idx - 1) % len(keys) + 1
-                    logger.info("DeepL OK (key #%d)", key_num)
-                    return result, f"DeepL #{key_num}"
-                except ValueError as e:
-                    if "quota exceeded" in str(e).lower():
-                        logger.warning("DeepL key quota exceeded, trying next")
-                        continue
-                    raise
-                except Exception as e:
-                    logger.warning("DeepL failed: %s", e)
-                    continue
-
-            logger.warning("All DeepL keys exhausted, falling back to Groq")
-
-        # Fallback to translation LLM via ProviderManager
-        if self._provider_manager:
-            llm = self._provider_manager.get_translation_llm()
-            if llm:
-                try:
-                    result = llm.chat([
-                        {"role": "system", "content": TRANSLATE_PROMPT.format(language=target_language)},
-                        {"role": "user", "content": text},
-                    ], temperature=0.3)
-                    return result, "LLM"
-                except Exception as e:
-                    logger.warning("Translation LLM failed: %s", e)
-
-        # Legacy fallback to groq.api_key
-        if self._groq.api_key:
-            result = self._translate_groq(text, target_language)
-            return result, "Groq LLM"
-
-        raise ValueError("Не налаштовано жодного сервісу перекладу. Додайте API ключ у Налаштування → Переклад")
-
-
-    def _next_deepl_key(self, keys: list[str]) -> str:
-        if not keys:
-            return ""
-        idx = self._deepl_rotation_idx % len(keys)
-        self._deepl_rotation_idx += 1
-        return keys[idx]
-
-    def _translate_deepl(self, text: str, target_lang: str, api_key: str) -> str:
-        base_url = "https://api-free.deepl.com" if api_key.endswith(":fx") else "https://api.deepl.com"
-        deepl_lang = target_lang.upper()
-        lang_map = {"EN": "EN-US", "PT": "PT-BR", "ZH": "ZH-HANS"}
-        deepl_lang = lang_map.get(deepl_lang, deepl_lang)
-
-        with httpx.Client(timeout=30.0) as client:
-            resp = client.post(
-                f"{base_url}/v2/translate",
-                headers={"Authorization": f"DeepL-Auth-Key {api_key}"},
-                data={"text": text, "target_lang": deepl_lang},
-            )
-            if resp.status_code == 456:
-                raise ValueError("DeepL quota exceeded for this key")
-            resp.raise_for_status()
-            data = resp.json()
-            translations = data.get("translations", [])
-            if translations:
-                return translations[0].get("text", "")
-            raise ValueError("No translations in DeepL response")
-
-    def _translate_groq(self, text: str, target_language: str) -> str:
-        with httpx.Client(
-            base_url="https://api.groq.com/openai/v1",
-            headers={"Authorization": f"Bearer {self._groq.api_key}"},
-            timeout=30.0,
-        ) as client:
-            resp = client.post(
-                "/chat/completions",
-                json={
-                    "model": self._groq.llm_model,
-                    "messages": [
-                        {"role": "system", "content": TRANSLATE_PROMPT.format(language=target_language)},
-                        {"role": "user", "content": text},
-                    ],
-                    "temperature": 0.3,
-                    "max_tokens": 4000,
-                },
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"].strip()
+        return self._engine.translate(text, target_language)
