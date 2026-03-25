@@ -197,9 +197,14 @@ class _Handler(BaseHTTPRequestHandler):
                     "translations": translations,
                     "engine": engine,
                 })
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                logger.debug("Client disconnected before response was sent")
             except Exception as e:
                 logger.exception("Translation failed")
-                self._json_response(500, {"error": str(e)})
+                try:
+                    self._json_response(500, {"error": str(e)})
+                except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+                    logger.debug("Client disconnected during error response")
 
         else:
             self._json_response(404, {"error": "not found"})

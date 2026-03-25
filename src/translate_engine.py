@@ -7,6 +7,7 @@ can share the same translation logic.
 from __future__ import annotations
 
 import logging
+from urllib.parse import urlencode
 
 import httpx
 
@@ -212,7 +213,7 @@ class TranslateEngine:
         if source_lang != "auto":
             data["source_lang"] = source_lang.upper()
 
-        with httpx.Client(timeout=30.0) as client:
+        with httpx.Client(timeout=60.0) as client:
             resp = client.post(
                 f"{base_url}/v2/translate",
                 headers={"Authorization": f"DeepL-Auth-Key {api_key}"},
@@ -239,17 +240,21 @@ class TranslateEngine:
         base_url = "https://api-free.deepl.com" if api_key.endswith(":fx") else "https://api.deepl.com"
         deepl_lang = self._deepl_target_lang(target_lang)
 
-        # httpx supports list values for form data via list of tuples
-        form_data: list[tuple[str, str]] = [("text", t) for t in texts]
-        form_data.append(("target_lang", deepl_lang))
+        # Manually URL-encode repeated "text" params for DeepL batch API
+        form_params: list[tuple[str, str]] = [("text", t) for t in texts]
+        form_params.append(("target_lang", deepl_lang))
         if source_lang != "auto":
-            form_data.append(("source_lang", source_lang.upper()))
+            form_params.append(("source_lang", source_lang.upper()))
+        encoded_body = urlencode(form_params).encode("utf-8")
 
-        with httpx.Client(timeout=30.0) as client:
+        with httpx.Client(timeout=60.0) as client:
             resp = client.post(
                 f"{base_url}/v2/translate",
-                headers={"Authorization": f"DeepL-Auth-Key {api_key}"},
-                data=form_data,
+                headers={
+                    "Authorization": f"DeepL-Auth-Key {api_key}",
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                content=encoded_body,
             )
             if resp.status_code == 456:
                 raise ValueError("DeepL quota exceeded for this key")
