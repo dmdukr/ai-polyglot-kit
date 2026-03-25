@@ -86,14 +86,22 @@
 
   async function translateVisibleNodes(lang) {
     const allNodes = collectTextNodes();
+    console.log("[APK:cs] collectTextNodes:", allNodes.length, "total text nodes");
+
     const visibleNodes = allNodes.filter((n) => {
       const el = n.parentElement;
       return el && isInViewport(el);
     });
+    console.log("[APK:cs] Visible nodes:", visibleNodes.length, "of", allNodes.length);
 
-    if (visibleNodes.length === 0) return;
+    if (visibleNodes.length === 0) {
+      console.warn("[APK:cs] No visible text nodes found — nothing to translate");
+      return;
+    }
 
     const texts = visibleNodes.map((n) => n.textContent);
+    console.log("[APK:cs] First 3 texts:", texts.slice(0, 3));
+    console.log("[APK:cs] Sending", texts.length, "texts to background, lang=", lang);
 
     // Send to background for translation
     const response = await chrome.runtime.sendMessage({
@@ -101,29 +109,37 @@
       texts,
       lang,
     });
+    console.log("[APK:cs] Got response from background:", JSON.stringify(response).slice(0, 500));
 
     if (response.error) {
-      console.error("[APK] Translation error:", response.error);
+      console.error("[APK:cs] Translation error:", response.error);
       return;
     }
 
     const translations = response.translations;
-    if (!translations || translations.length !== visibleNodes.length) {
-      console.error("[APK] Translation count mismatch");
+    if (!translations) {
+      console.error("[APK:cs] No translations in response:", response);
+      return;
+    }
+    if (translations.length !== visibleNodes.length) {
+      console.error("[APK:cs] Count mismatch: got", translations.length, "expected", visibleNodes.length);
       return;
     }
 
     // Apply translations inline
+    let applied = 0;
+    let skippedSame = 0;
+    let skippedNoParent = 0;
     for (let i = 0; i < visibleNodes.length; i++) {
       const node = visibleNodes[i];
       const parent = node.parentElement;
-      if (!parent) continue;
+      if (!parent) { skippedNoParent++; continue; }
 
       const original = node.textContent;
       const translated = translations[i];
 
       // Skip if translation is same as original
-      if (translated === original) continue;
+      if (translated === original) { skippedSame++; continue; }
 
       // Save original text
       parent.setAttribute("data-apk-original", original);
@@ -131,7 +147,9 @@
 
       // Replace text
       node.textContent = translated;
+      applied++;
     }
+    console.log(`[APK:cs] Applied: ${applied}, skipped (same): ${skippedSame}, skipped (no parent): ${skippedNoParent}`);
   }
 
   /* ---------- Scroll observer ---------- */
@@ -184,13 +202,22 @@
   /* ---------- Message listener ---------- */
 
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    console.log("[APK:cs] Message received:", msg.action);
+
     if (msg.action === "startTranslation") {
+      console.log("[APK:cs] Starting translation, lang=", msg.lang);
       injectTooltipCSS();
       translatedState = true;
-      translateVisibleNodes(msg.lang).then(() => {
-        startScrollObserver(msg.lang);
-        sendResponse({ ok: true });
-      });
+      translateVisibleNodes(msg.lang)
+        .then(() => {
+          console.log("[APK:cs] translateVisibleNodes completed OK");
+          startScrollObserver(msg.lang);
+          sendResponse({ ok: true });
+        })
+        .catch((err) => {
+          console.error("[APK:cs] translateVisibleNodes FAILED:", err);
+          sendResponse({ ok: false, error: err.message });
+        });
       return true; // async
     }
 

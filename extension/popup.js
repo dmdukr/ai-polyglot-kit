@@ -89,36 +89,43 @@
 
   async function onButtonClick() {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.id) return;
+    console.log("[APK:popup] Button click, tab:", tab?.id, "url:", tab?.url);
+    if (!tab || !tab.id) {
+      console.error("[APK:popup] No active tab!");
+      return;
+    }
 
     if (isTranslated) {
       // Revert
+      console.log("[APK:popup] Reverting...");
       try {
         await chrome.tabs.sendMessage(tab.id, { action: "revert" });
       } catch (e) {
-        console.error("Revert failed:", e);
+        console.error("[APK:popup] Revert failed:", e);
       }
       isTranslated = false;
       setTranslateMode();
       progressEl.classList.add("hidden");
     } else {
       // Translate
+      console.log("[APK:popup] Translating, lang=", langSelect.value);
       translateBtn.disabled = true;
       progressEl.textContent = "Translating...";
       progressEl.classList.remove("hidden");
 
       try {
-        await chrome.tabs.sendMessage(tab.id, {
+        const result = await chrome.tabs.sendMessage(tab.id, {
           action: "startTranslation",
           lang: langSelect.value,
         });
+        console.log("[APK:popup] Content script response:", result);
         isTranslated = true;
         setRevertMode();
         progressEl.textContent = "Done!";
         setTimeout(() => progressEl.classList.add("hidden"), 2000);
       } catch (e) {
         progressEl.textContent = "Error: " + e.message;
-        console.error("Translation failed:", e);
+        console.error("[APK:popup] Translation failed:", e);
       }
 
       translateBtn.disabled = false;
