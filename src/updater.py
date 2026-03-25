@@ -98,8 +98,8 @@ class Updater:
             # Launch installer (handles killing old process, replacing files, restart)
             logger.info("Launching installer: %s", installer_path)
             subprocess.Popen(
-                [str(installer_path), "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART"],
-                creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NO_WINDOW,
+                [str(installer_path)],
+                creationflags=subprocess.DETACHED_PROCESS,
             )
 
             logger.info("Exiting for update...")
