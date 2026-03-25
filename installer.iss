@@ -2,7 +2,7 @@
 ; Requires Inno Setup 6+ (https://jrsoftware.org/isinfo.php)
 
 #define MyAppName "AI Polyglot Kit"
-#define MyAppVersion "5.0.5"
+#define MyAppVersion "5.0.6"
 #define MyAppPublisher "dmdukr"
 #define MyAppURL "https://github.com/dmdukr/ai-polyglot-kit"
 #define MyAppExeName "AIPolyglotKit.exe"

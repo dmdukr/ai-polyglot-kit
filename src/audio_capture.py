@@ -93,7 +93,7 @@ class AudioCapture:
         self._frame_bytes: int = self._frame_samples * SAMPLE_WIDTH
 
         self._pa: pyaudio.PyAudio | None = None
-        self._pa_lock = threading.Lock()  # protect PyAudio init/terminate
+        self._pa_lock = threading.RLock()  # protect ALL PyAudio operations (reentrant)
         self._devices_cache: list[AudioDevice] | None = None
         self._stream: pyaudio.Stream | None = None
         self._queue: queue.Queue[bytes] = queue.Queue()
@@ -215,8 +215,9 @@ class AudioCapture:
                 self._device_index = None
             return device
 
-        pa = self._ensure_pa()
-        info = pa.get_device_info_by_index(index)
+        with self._pa_lock:
+            pa = self._ensure_pa()
+            info = pa.get_device_info_by_index(index)
         if int(info.get("maxInputChannels", 0)) < 1:
             raise ValueError(f"Device {index} ({info['name']}) has no input channels")
         self._device_index = index
@@ -238,8 +239,6 @@ class AudioCapture:
         if self._running:
             raise RuntimeError("AudioCapture is already running")
 
-        pa = self._ensure_pa()
-
         # Drain stale frames
         while not self._queue.empty():
             try:
@@ -247,12 +246,15 @@ class AudioCapture:
             except queue.Empty:
                 break
 
-        if self._device_index is not None:
-            # Single device mode
-            self._start_single(pa, self._device_index)
-        else:
-            # Multi-mic mode: open all, pick loudest
-            self._start_multi(pa)
+        with self._pa_lock:
+            pa = self._ensure_pa()
+
+            if self._device_index is not None:
+                # Single device mode
+                self._start_single(pa, self._device_index)
+            else:
+                # Multi-mic mode: open all, pick loudest
+                self._start_multi(pa)
 
         self._running = True
         logger.info("Audio capture started")
@@ -409,8 +411,9 @@ class AudioCapture:
         if self._device_index is None:
             return "Auto (all mics)"
         try:
-            pa = self._ensure_pa()
-            info = pa.get_device_info_by_index(self._device_index)
+            with self._pa_lock:
+                pa = self._ensure_pa()
+                info = pa.get_device_info_by_index(self._device_index)
             return str(info.get("name", f"Device {self._device_index}"))
         except Exception:
             return f"Device {self._device_index}"
@@ -456,10 +459,11 @@ class AudioCapture:
     # ── Private helpers ─────────────────────────────────────────────────
 
     def _ensure_pa(self) -> pyaudio.PyAudio:
-        """Lazily initialise the PyAudio instance."""
-        if self._pa is None:
-            self._pa = pyaudio.PyAudio()
-        return self._pa
+        """Lazily initialise the PyAudio instance (thread-safe)."""
+        with self._pa_lock:
+            if self._pa is None:
+                self._pa = pyaudio.PyAudio()
+            return self._pa
 
     def _calibrate_gain(self, pa: pyaudio.PyAudio) -> float:
         """Probe mic briefly to calculate auto-gain. Target RMS ~3000."""
@@ -468,29 +472,30 @@ class AudioCapture:
         MAX_GAIN = 10.0
 
         try:
-            stream = pa.open(
-                format=SAMPLE_FORMAT, channels=CHANNELS,
-                rate=self._config.sample_rate, input=True,
-                input_device_index=self._device_index,
-                frames_per_buffer=self._frame_samples,
-            )
-            # Read 0.5 second of audio
-            n_frames = max(1, int(self._config.sample_rate * 0.5 / self._frame_samples))
-            total_rms = 0.0
-            peak = 0
-            for _ in range(n_frames):
-                data = stream.read(self._frame_samples, exception_on_overflow=False)
-                rms = compute_rms(data)
-                total_rms += rms
-                # Track peak
-                n_samples = len(data) // SAMPLE_WIDTH
-                samples = struct.unpack(f"<{n_samples}h", data[:n_samples * SAMPLE_WIDTH])
-                p = max(abs(s) for s in samples) if samples else 0
-                if p > peak:
-                    peak = p
+            with self._pa_lock:
+                stream = pa.open(
+                    format=SAMPLE_FORMAT, channels=CHANNELS,
+                    rate=self._config.sample_rate, input=True,
+                    input_device_index=self._device_index,
+                    frames_per_buffer=self._frame_samples,
+                )
+                # Read 0.5 second of audio
+                n_frames = max(1, int(self._config.sample_rate * 0.5 / self._frame_samples))
+                total_rms = 0.0
+                peak = 0
+                for _ in range(n_frames):
+                    data = stream.read(self._frame_samples, exception_on_overflow=False)
+                    rms = compute_rms(data)
+                    total_rms += rms
+                    # Track peak
+                    n_samples = len(data) // SAMPLE_WIDTH
+                    samples = struct.unpack(f"<{n_samples}h", data[:n_samples * SAMPLE_WIDTH])
+                    p = max(abs(s) for s in samples) if samples else 0
+                    if p > peak:
+                        peak = p
 
-            stream.stop_stream()
-            stream.close()
+                stream.stop_stream()
+                stream.close()
 
             avg_rms = total_rms / n_frames if n_frames > 0 else 0
             logger.debug("Calibration: avg_rms=%.0f peak=%d", avg_rms, peak)
@@ -626,36 +631,37 @@ class AudioCapture:
 
         Returns ``None`` if the device cannot be opened or read.
         """
-        stream: pyaudio.Stream | None = None
-        try:
-            stream = pa.open(
-                format=SAMPLE_FORMAT,
-                channels=CHANNELS,
-                rate=self._config.sample_rate,
-                input=True,
-                input_device_index=device.index,
-                frames_per_buffer=self._frame_samples,
-            )
+        with self._pa_lock:
+            stream: pyaudio.Stream | None = None
+            try:
+                stream = pa.open(
+                    format=SAMPLE_FORMAT,
+                    channels=CHANNELS,
+                    rate=self._config.sample_rate,
+                    input=True,
+                    input_device_index=device.index,
+                    frames_per_buffer=self._frame_samples,
+                )
 
-            total_rms = 0.0
-            read_count = 0
-            for _ in range(num_frames):
-                data = stream.read(self._frame_samples, exception_on_overflow=False)
-                total_rms += compute_rms(data)
-                read_count += 1
+                total_rms = 0.0
+                read_count = 0
+                for _ in range(num_frames):
+                    data = stream.read(self._frame_samples, exception_on_overflow=False)
+                    total_rms += compute_rms(data)
+                    read_count += 1
 
-            return total_rms / read_count if read_count > 0 else 0.0
+                return total_rms / read_count if read_count > 0 else 0.0
 
-        except Exception as exc:
-            logger.debug(
-                "Cannot probe device %d (%s): %s", device.index, device.name, exc
-            )
-            return None
+            except Exception as exc:
+                logger.debug(
+                    "Cannot probe device %d (%s): %s", device.index, device.name, exc
+                )
+                return None
 
-        finally:
-            if stream is not None:
-                try:
-                    stream.stop_stream()
-                    stream.close()
-                except Exception:
-                    pass
+            finally:
+                if stream is not None:
+                    try:
+                        stream.stop_stream()
+                        stream.close()
+                    except Exception:
+                        pass
