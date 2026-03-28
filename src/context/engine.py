@@ -226,7 +226,7 @@ class ContextEngine:
             return None
         placeholders = ",".join("?" for _ in keywords)
         rows = self._db.execute(
-            f"SELECT cf.cluster_id, COUNT(*) as hits"  # noqa: S608
+            f"SELECT cf.cluster_id, COUNT(*) as hits"  # noqa: S608  # nosec B608
             f" FROM fingerprint_keywords fk"
             f" JOIN conversation_fingerprints cf ON fk.fingerprint_id = cf.id"
             f" WHERE fk.keyword IN ({placeholders})"

@@ -217,7 +217,7 @@ def expire_threads(db: sqlite3.Connection, current_app: str) -> list[int]:
     if expired_ids:
         placeholders = ",".join("?" for _ in expired_ids)
         db.execute(
-            f"UPDATE conversation_threads SET is_active = 0 WHERE id IN ({placeholders})",  # noqa: S608
+            f"UPDATE conversation_threads SET is_active = 0 WHERE id IN ({placeholders})",  # noqa: S608  # nosec B608
             expired_ids,
         )
         db.commit()

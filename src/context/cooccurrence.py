@@ -82,7 +82,7 @@ def query_cooccurrence(db: sqlite3.Connection, term: str, context_terms: list[st
 
     # Placeholders consist solely of '?' characters — no injection risk.
     sql = (
-        "SELECT cluster_id,"  # noqa: S608
+        "SELECT cluster_id,"  # noqa: S608  # nosec B608
         "       CAST(weight AS REAL) / MAX(MAX(CAST(julianday('now') - julianday(last_used) AS INTEGER), 0), 1)"
         "           AS effective_weight"
         " FROM term_cooccurrence"
@@ -115,7 +115,7 @@ def should_update_cooccurrence(db: sqlite3.Connection, keywords: list[str]) -> t
 
     # Placeholders consist solely of '?' characters — no injection risk.
     sql = (
-        "SELECT cluster_id, SUM(weight) AS total_weight FROM ("  # noqa: S608
+        "SELECT cluster_id, SUM(weight) AS total_weight FROM ("  # noqa: S608  # nosec B608
         f" SELECT cluster_id, weight FROM term_cooccurrence WHERE term_a IN ({ph})"
         " UNION ALL"
         f" SELECT cluster_id, weight FROM term_cooccurrence WHERE term_b IN ({ph})"
