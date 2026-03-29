@@ -461,7 +461,7 @@ class TrayApp:
             logger.info("Settings click: using PyWebView")
             show_settings(
                 self._config,
-                self._engine._audio_capture,
+                self._engine.get_audio_capture(),
                 self._on_settings_saved,
             )
             logger.info("Settings click: show_settings() returned (queued)")
