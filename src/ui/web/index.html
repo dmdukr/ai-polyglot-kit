@@ -1,0 +1,2191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Polyglot Kit v6.1 — Settings</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="app" class="window">
+  <div class="titlebar">
+    <span class="titlebar-text">AI Polyglot Kit — <span data-i18n="titlebar">Settings</span></span>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn btn-minimize" id="btn-window-minimize"></button>
+      <button class="titlebar-btn btn-maximize" id="btn-window-maximize"></button>
+      <button class="titlebar-btn btn-close" id="btn-window-close"></button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-section" data-i18n="nav.settings">Settings</div>
+      <div class="sidebar-item active" data-page="general"><span class="sidebar-icon">&#9881;</span> <span data-i18n="nav.general">General</span></div>
+      <div class="sidebar-item" data-page="audio"><span class="sidebar-icon">&#127908;</span> <span data-i18n="nav.audio">Audio</span></div>
+      <div class="sidebar-item" data-page="dictation"><span class="sidebar-icon">&#9997;</span> <span data-i18n="nav.dictation">Dictation</span></div>
+      <div class="sidebar-item" data-page="llm"><span class="sidebar-icon">&#129302;</span> <span data-i18n="nav.llm">Normalization</span></div>
+      <div class="sidebar-item" data-page="translate"><span class="sidebar-icon">&#127760;</span> <span data-i18n="nav.translate">Translate</span></div>
+
+      <div class="sidebar-section" data-i18n="nav.content">Content</div>
+      <div class="sidebar-item" data-page="dictionary"><span class="sidebar-icon">&#128214;</span> <span data-i18n="nav.dictionary">Dictionary</span></div>
+      <div class="sidebar-item" data-page="replacements"><span class="sidebar-icon">&#128260;</span> <span data-i18n="nav.replacements">Replacements</span></div>
+      <div class="sidebar-item" data-page="instructions"><span class="sidebar-icon">&#128221;</span> <span data-i18n="nav.instructions">Per-App</span></div>
+      <div class="sidebar-item" data-page="history"><span class="sidebar-icon">&#128197;</span> <span data-i18n="nav.history">History</span></div>
+
+      <div class="sidebar-section" data-i18n="nav.advanced">Advanced</div>
+      <div class="sidebar-item" data-page="speaker"><span class="sidebar-icon">&#128101;</span> <span data-i18n="nav.speaker">Speaker Lock</span></div>
+      <div class="sidebar-item" data-page="offline"><span class="sidebar-icon">&#9729;</span> <span data-i18n="nav.offline">Offline</span></div>
+      <div class="sidebar-item" data-page="network"><span class="sidebar-icon">&#128268;</span> <span data-i18n="nav.network">Network</span></div>
+      <div class="sidebar-item" data-page="stats"><span class="sidebar-icon">&#128200;</span> <span data-i18n="nav.stats">Stats</span></div>
+      <div class="sidebar-item" data-page="account"><span class="sidebar-icon">&#128100;</span> <span data-i18n="nav.account">Account</span></div>
+
+      <div class="sidebar-bottom"></div>
+    </div>
+
+    <!-- ==================== GENERAL ==================== -->
+    <div class="content active" id="page-general" data-page="general">
+      <div class="page-title" data-i18n="page.general">General</div>
+      <div class="card">
+        <div class="card-title" data-i18n="general.appearance">Appearance</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.theme">Theme</div>
+            <div class="form-hint" data-i18n="general.theme.hint">Choose dark or light mode</div>
+          </div>
+          <select id="theme-select"><option value="dark" selected data-i18n="general.theme.dark">Dark</option><option value="light" data-i18n="general.theme.light">Light</option></select>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.language">Language</div>
+            <div class="form-hint" data-i18n="general.language.hint">Interface language</div>
+          </div>
+          <select id="lang-select"><option value="en">English</option><option value="uk" selected>Ukrainian</option></select>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.trayIcon">Tray icon style</div>
+            <div class="form-hint" data-i18n="general.trayIcon.hint">Appearance in system tray</div>
+          </div>
+          <select id="tray-style-select"><option selected data-i18n="general.trayIcon.color">Color</option><option data-i18n="general.trayIcon.mono">Monochrome</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="general.startup">Startup</div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="general.autostart">Launch on system startup</div>
+          <label class="toggle"><input type="checkbox" id="toggle-autostart" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="general.startMinimized">Start minimized to tray</div>
+          <label class="toggle"><input type="checkbox" id="toggle-start-minimized" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.checkUpdates">Check for updates on startup</div>
+            <div class="form-hint" data-i18n="general.checkUpdates.hint">Notify when new version is available</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="btn btn-sm" id="btn-check-update-general" data-i18n="general.checkNow">Check now</button>
+            <label class="toggle"><input type="checkbox" id="toggle-check-updates" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="general.privacy">Privacy</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.telemetry">Send anonymous usage statistics</div>
+            <div class="form-hint" data-i18n="general.telemetry.hint">Help improve AI Polyglot Kit by sharing anonymous usage data (no audio or text content)</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-telemetry"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="general.keybindings">Keybindings</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.hotkey.record">Record (hold)</div>
+            <div class="form-hint" data-i18n="general.hotkey.record.hint">Hold to record, release to process</div>
+          </div>
+          <span class="hotkey-input" data-action="Record" id="hotkey-record">F12</span>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.hotkey.holdTime">Minimum hold time</div>
+            <div class="form-hint" data-i18n="general.hotkey.holdTime.hint">How long you must hold the hotkey before recording starts. Prevents accidental recordings from quick key taps.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="input-hold-time" value="200" min="50" max="500" step="50" style="width:70px">
+            <span class="form-hint" data-i18n="unit.ms">ms</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.hotkey.feedback">Feedback (double-tap)</div>
+            <div class="form-hint" data-i18n="general.hotkey.feedback.hint">Double-tap to request LLM re-normalization</div>
+          </div>
+          <span class="hotkey-input" data-action="Feedback" id="hotkey-feedback">F11</span>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.hotkey.cancel">Cancel recording</div>
+            <div class="form-hint" data-i18n="general.hotkey.cancel.hint">Abort current recording, discard audio</div>
+          </div>
+          <span class="hotkey-input" data-action="Cancel" id="hotkey-cancel">Escape</span>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.hotkey.pasteLast">Paste last transcript</div>
+            <div class="form-hint" data-i18n="general.hotkey.pasteLast.hint">Insert last dictation at cursor</div>
+          </div>
+          <span class="hotkey-input" data-action="Paste Last" id="hotkey-paste-last">Ctrl+Shift+V</span>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.hotkey.translate">Translate (double-tap)</div>
+            <div class="form-hint" data-i18n="general.hotkey.translate.hint">Double-tap to translate selected text or clipboard content</div>
+          </div>
+          <span class="hotkey-input" data-action="Translate" id="hotkey-translate">Ctrl+C</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="general.notifications">Notifications</div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="general.soundFeedback">Show sound feedback on recognition</div>
+          <label class="toggle"><input type="checkbox" id="toggle-sound-feedback" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="general.showOverlay">Show recording overlay</div>
+          <label class="toggle"><input type="checkbox" id="toggle-show-overlay" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="general.overlayPosition">Overlay position</div>
+            <div class="form-hint" data-i18n="general.overlayPosition.hint">Where to show the recording pill</div>
+          </div>
+          <select id="overlay-position-select"><option data-i18n="general.overlay.topLeft">Top left</option><option data-i18n="general.overlay.topCenter">Top center</option><option selected data-i18n="general.overlay.topRight">Top right</option><option data-i18n="general.overlay.bottomLeft">Bottom left</option><option data-i18n="general.overlay.bottomCenter">Bottom center</option><option data-i18n="general.overlay.bottomRight">Bottom right</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== AUDIO ==================== -->
+    <div class="content" id="page-audio" data-page="audio">
+      <div class="page-title" data-i18n="page.audio">Audio</div>
+      <div class="card">
+        <div class="card-title" data-i18n="audio.microphone">Microphone</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.inputDevice">Input Device</div>
+            <div class="form-hint" data-i18n="audio.inputDevice.hint">Which microphone to use for voice dictation. If you have a USB headset or external mic, select it here for best quality. Built-in laptop mics work but may pick up more noise.</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="mic-select" style="min-width:220px"><option>Jabra Link 370 (USB Audio)</option><option>Realtek HD Audio</option><option>Bluetooth Headset</option></select>
+            <button class="btn btn-sm btn-primary" id="btn-test-mic"><span>&#9654;</span> <span class="btn-text" data-i18n="audio.test">Test</span></button>
+            <button class="btn btn-sm" id="btn-refresh-mic" title="Refresh device list">&#8635;</button>
+          </div>
+        </div>
+        <div class="rms-bar"><div class="rms-fill" id="rms-fill"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span class="form-hint" data-i18n="audio.inputLevel.hint">Input level — speak normally, the bar should be in the middle range</span>
+          <span class="form-hint" id="rms-db">-24 dB</span>
+        </div>
+        <div class="form-row" style="margin-top:8px">
+          <div>
+            <div class="form-label" data-i18n="audio.autoSwitch">Auto-switch to new devices</div>
+            <div class="form-hint" data-i18n="audio.autoSwitch.hint">When you plug in a USB headset or connect Bluetooth headphones, automatically switch to them. Unplug — switch back to the previous device.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-auto-switch" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="audio.backgroundAudio">Background Audio</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.ducking">Lower other apps during recording</div>
+            <div class="form-hint" data-i18n="audio.ducking.hint">While you're dictating, automatically reduce volume of music, video calls, and other apps so your voice comes through cleaner. Volume returns to normal when you stop.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-ducking"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.duckingAmount">Reduction amount</div>
+            <div class="form-hint" data-i18n="audio.duckingAmount.hint">How much to lower other apps' volume. 10% = barely noticeable, 80% = near silent. Choose what feels comfortable for you.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="range" min="0" max="100" value="10" id="duck-slider">
+            <span style="font-size:12px;color:var(--fg-secondary);min-width:30px" id="duck-value">10%</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="audio.recording">Recording</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.quality">Audio quality</div>
+            <div class="form-hint" data-i18n="audio.quality.hint">16 kHz is sufficient for speech recognition and uses less bandwidth. 48 kHz is studio quality — only needed if you plan to save recordings for other purposes.</div>
+          </div>
+          <select id="audio-quality-select"><option selected data-i18n="audio.quality.16k">16000 Hz (speech, recommended)</option><option data-i18n="audio.quality.48k">48000 Hz (high quality)</option></select>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.saveRecordings">Save recordings</div>
+            <div class="form-hint" data-i18n="audio.saveRecordings.hint">Keep audio files after recognition. Useful for debugging, training, or comparing what you said vs what was recognized.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-save-recordings"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.saveLocation">Save location</div>
+            <div class="form-hint" data-i18n="audio.saveLocation.hint">Where to store recorded audio files</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" id="input-save-path" value="%APPDATA%\AI Polyglot Kit\recordings" style="min-width:250px" disabled>
+            <button class="btn btn-sm" id="btn-browse-save" data-i18n="audio.browse">Browse</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="audio.autoDelete">Auto-delete after</div>
+            <div class="form-hint" data-i18n="audio.autoDelete.hint">Automatically remove old recordings to save disk space</div>
+          </div>
+          <select id="auto-delete-select"><option data-i18n="audio.autoDelete.never">Never</option><option data-i18n="audio.autoDelete.7d">7 days</option><option selected data-i18n="audio.autoDelete.30d">30 days</option><option data-i18n="audio.autoDelete.90d">90 days</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== LLM ==================== -->
+    <div class="content" id="page-llm" data-page="llm">
+      <div class="page-title" data-i18n="page.llm">Text Normalization via LLM</div>
+      <div class="card">
+        <div class="card-title" data-i18n="llm.onlineProviders">Online Providers</div>
+        <div class="form-hint" style="margin-bottom:4px" data-i18n="llm.onlineProviders.hint">Three providers in priority order. If #1 is unavailable, falls back to #2, then #3.</div>
+        <div style="margin-bottom:12px"><a href="#" class="form-hint" style="color:var(--accent-highlight);text-decoration:underline;cursor:pointer;font-size:12px" data-open="modal-help-providers" data-i18n="llm.recommendedLink">Recommended services (GitHub README)</a></div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent-highlight)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--accent-highlight);color:#000;font-size:10px;padding:2px 6px">1</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="llm-provider-1"><option selected>Groq</option><option>OpenAI</option><option>Anthropic</option><option>OpenRouter</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="llm-key-1" value="gsk_xxxxxxxxxxxxxxxxxxxx" style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-success" data-i18n="badge.valid">Valid</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="model">Model</div>
+          <select id="llm-model-1"><option selected>llama-3.3-70b-versatile</option><option>llama-3.1-8b-instant</option><option>llama-3.2-3b-preview</option><option>mixtral-8x7b-32768</option></select>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fg-secondary)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--fg-secondary);color:#000;font-size:10px;padding:2px 6px">2</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="llm-provider-2"><option>Groq</option><option selected>OpenAI</option><option>Anthropic</option><option>OpenRouter</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="llm-key-2" placeholder="sk-..." style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-warning" data-i18n="badge.notSet">Not set</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fg-secondary)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--fg-secondary);color:#000;font-size:10px;padding:2px 6px">3</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="llm-provider-3"><option>Groq</option><option>OpenAI</option><option selected>Anthropic</option><option>OpenRouter</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="llm-key-3" placeholder="sk-ant-..." style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-warning" data-i18n="badge.notSet">Not set</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="llm.settings">LLM Settings</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="llm.temperature">Temperature</div>
+            <div class="form-hint" data-i18n="llm.temperature.hint">Lower = more consistent, higher = more creative</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="range" min="0" max="100" value="30" id="temp-slider">
+            <span style="font-size:12px;color:var(--fg-secondary);min-width:30px" id="temp-value">0.3</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="llm.maxTokens">Max tokens</div>
+            <div class="form-hint" data-i18n="llm.maxTokens.hint">Maximum output length</div>
+          </div>
+          <input type="number" id="llm-max-tokens" value="1024" min="128" max="4096" step="128" style="min-width:80px">
+        </div>
+      </div>
+      <div class="banner banner-warning" style="display:flex;gap:4px"><span>&#9888;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="llm.offlineWarning">No offline LLM model downloaded. Go to Settings → Offline to detect your system and download a model.</span></div>
+      <div class="card" id="card-llm-offline" style="opacity:0.45;pointer-events:none">
+        <div class="card-title" data-i18n="llm.offlineProvider">Offline Provider</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="llm.offlineProvider.hint">Built-in lightweight model for text normalization without internet. Runs on CPU via llama.cpp (GGUF Q4 quantization).</div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="model">Model</div>
+          <select id="llm-offline-model"><option selected>Qwen2.5-1.5B (Q4, ~900 MB)</option><option>Qwen2.5-0.5B (Q4, ~400 MB)</option><option>SmolLM2-360M (Q4, ~250 MB)</option></select>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="llm.temperature">Temperature</div>
+            <div class="form-hint" data-i18n="llm.offlineTemp.hint">Lower = more predictable normalization</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="range" min="0" max="100" value="10" id="llm-offline-temp-slider" style="width:120px">
+            <span style="font-size:12px;color:var(--fg-secondary);min-width:30px" id="llm-offline-temp-value">0.1</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="llm.features">Normalization Features</div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="llm.enableNorm">Enable LLM text normalization</div>
+          <label class="toggle"><input type="checkbox" id="toggle-llm-enable" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="llm.addPunctuation">Add punctuation</div>
+          <label class="toggle"><input type="checkbox" id="toggle-llm-punctuation" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="llm.fixGrammar">Fix grammar</div>
+          <label class="toggle"><input type="checkbox" id="toggle-llm-grammar" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="llm.fixTerminology">Fix terminology</div>
+          <label class="toggle"><input type="checkbox" id="toggle-llm-terminology" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="llm.capitalize">Capitalize sentences</div>
+          <label class="toggle"><input type="checkbox" id="toggle-llm-capitalize" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="llm.numberFormat">Number formatting</div>
+            <div class="form-hint" data-i18n="llm.numberFormat.hint">Convert "twenty three" to "23"</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-llm-numbers" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="llm.feedbackLoop">Feedback Loop</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="llm.feedbackMode">Feedback mode</div>
+            <div class="form-hint" data-i18n="llm.feedbackMode.hint">What happens when you double-tap feedback key</div>
+          </div>
+          <select id="feedback-mode-select"><option selected data-i18n="llm.feedback.renorm">Re-normalize with stronger corrections</option><option data-i18n="llm.feedback.resend">Re-send to STT with different model</option><option data-i18n="llm.feedback.dialog">Show correction dialog</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DICTATION ==================== -->
+    <div class="content" id="page-dictation" data-page="dictation">
+      <div class="page-title" data-i18n="page.dictation">Dictation — Speech-to-Text</div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.recMode">Recognition Mode</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="dictation.recMode.hint">How the app recognizes your speech. Fallback mode tries online first, switches to offline automatically if unavailable or out of tokens.</div>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-input);border:2px solid var(--border);border-radius:var(--radius-card);opacity:0.45;cursor:not-allowed" title="Download offline models first (Settings → Offline)">
+            <input type="radio" name="rec-mode" value="fallback" disabled> <div><div class="form-label" style="font-size:13px;margin:0" data-i18n="dictation.mode.fallback">Fallback</div><div class="form-hint" style="font-size:11px" data-i18n="dictation.mode.fallback.hint">Uses cloud, switches to offline if no internet or tokens run out</div></div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-input);border:2px solid var(--accent-highlight);border-radius:var(--radius-card);cursor:pointer">
+            <input type="radio" name="rec-mode" value="online" checked> <div><div class="form-label" style="font-size:13px;margin:0" data-i18n="dictation.mode.online">Online only</div><div class="form-hint" style="font-size:11px" data-i18n="dictation.mode.online.hint">Cloud API, best quality</div></div>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 12px;background:var(--bg-input);border:2px solid var(--border);border-radius:var(--radius-card);opacity:0.45;cursor:not-allowed" title="Download offline models first (Settings → Offline)">
+            <input type="radio" name="rec-mode" value="offline" disabled> <div><div class="form-label" style="font-size:13px;margin:0" data-i18n="dictation.mode.offline">Offline only</div><div class="form-hint" style="font-size:11px" data-i18n="dictation.mode.offline.hint">Built-in model, no internet needed</div></div>
+          </label>
+        </div>
+        <div style="margin-top:8px;color:var(--warning);display:flex;gap:4px;font-size:12px"><span>&#9888;</span><span class="form-hint" style="color:inherit;margin:0" data-i18n="dictation.offlineWarning">Fallback and Offline modes require offline models. Download them in Settings → Offline.</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.onlineProviders">Online Providers</div>
+        <div class="form-hint" style="margin-bottom:4px" data-i18n="dictation.onlineProviders.hint">Three providers in priority order. If #1 is unavailable or out of tokens, falls back to #2, then #3.</div>
+        <div style="margin-bottom:12px"><a href="#" class="form-hint" style="color:var(--accent-highlight);text-decoration:underline;cursor:pointer;font-size:12px" data-open="modal-help-providers" data-i18n="dictation.recommendedLink">Recommended services (GitHub README)</a></div>
+        <div class="form-row" style="align-items:flex-start">
+          <div>
+            <div class="form-label" data-i18n="dictation.languages">Languages</div>
+            <div class="form-hint" data-i18n="dictation.languages.hint">Select languages you speak. Multiple languages improve recognition accuracy when switching between them.</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 12px" id="stt-languages">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" checked> Українська</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" checked> English</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Русский</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Deutsch</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Français</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Español</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Polski</label>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent-highlight)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--accent-highlight);color:#000;font-size:10px;padding:2px 6px">1</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="stt-provider-1"><option selected>AssemblyAI</option><option>Deepgram</option><option>OpenAI</option><option>Google Cloud STT</option><option>Groq</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="stt-key-1" value="gsk_xxxxxxxxxxxxxxxxxxxx" style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-success" data-i18n="badge.valid">Valid</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="baseUrl">Base URL</div>
+            <div class="form-hint" data-i18n="baseUrl.hint">Override for self-hosted or proxy endpoints</div>
+          </div>
+          <input type="url" id="stt-url-1" placeholder="https://api.groq.com/openai/v1" style="min-width:240px">
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="model">Model</div>
+          <select id="stt-model-1"><option selected>whisper-large-v3-turbo</option><option>whisper-large-v3</option><option>distil-whisper-large-v3-en</option></select>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fg-secondary)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--fg-secondary);color:#000;font-size:10px;padding:2px 6px">2</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="stt-provider-2"><option>AssemblyAI</option><option selected>Deepgram</option><option>OpenAI</option><option>Google Cloud STT</option><option>Groq</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="stt-key-2" placeholder="sk-..." style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-warning" data-i18n="badge.notSet">Not set</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="baseUrl">Base URL</div>
+            <div class="form-hint" data-i18n="baseUrl.hint">Override for self-hosted or proxy endpoints</div>
+          </div>
+          <input type="url" id="stt-url-2" placeholder="https://api.openai.com/v1" style="min-width:240px">
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="model">Model</div>
+          <select id="stt-model-2"><option selected>whisper-1</option></select>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fg-secondary)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--fg-secondary);color:#000;font-size:10px;padding:2px 6px">3</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="stt-provider-3"><option>AssemblyAI</option><option>Deepgram</option><option selected>OpenAI</option><option>Google Cloud STT</option><option>Groq</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="stt-key-3" placeholder="Enter key..." style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-warning" data-i18n="badge.notSet">Not set</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="baseUrl">Base URL</div>
+            <div class="form-hint" data-i18n="baseUrl.hint">Override for self-hosted or proxy endpoints</div>
+          </div>
+          <input type="url" id="stt-url-3" placeholder="https://api.deepgram.com/v1" style="min-width:240px">
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="model">Model</div>
+          <select id="stt-model-3"><option selected>nova-2</option></select>
+        </div>
+      </div>
+      <div class="banner banner-warning" style="display:flex;gap:4px"><span>&#9888;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="dictation.offlineSTTWarning">No offline STT model downloaded. Go to Settings → Offline to detect your system and download a model.</span></div>
+      <div class="card" id="card-stt-offline" style="opacity:0.45;pointer-events:none">
+        <div class="card-title" data-i18n="dictation.offlineProvider">Offline Provider</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="dictation.offlineProvider.hint">Built-in Whisper Large V3 Turbo model (809M parameters). Optimized for CPU with int8 quantization via CTranslate2. No internet required.</div>
+        <div class="form-row" style="align-items:flex-start">
+          <div>
+            <div class="form-label" data-i18n="dictation.languages">Languages</div>
+            <div class="form-hint" data-i18n="dictation.offlineLanguages.hint">Same as online providers. Multiple languages help when you switch between them mid-speech.</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 12px" id="stt-offline-languages">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" checked> Українська</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox" checked> English</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Русский</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Deutsch</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Français</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Español</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer"><input type="checkbox"> Polski</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.cpuUsage">CPU usage</div>
+            <div class="form-hint" data-i18n="dictation.cpuUsage.hint">How much of your processor to dedicate to speech recognition</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="0" max="4" value="4" id="cpu-slider" style="width:160px">
+              <span class="form-label" style="font-size:12px;margin:0;min-width:90px" id="cpu-value" data-i18n="slider.maximum">Maximum</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--fg-secondary);padding:0 2px;width:160px">
+              <span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.low">Low</span><span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.fullPower">Full power</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.accuracy">Recognition accuracy</div>
+            <div class="form-hint" data-i18n="dictation.accuracy.hint">Higher accuracy takes more time. "Good" is enough for most cases.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="0" max="4" value="2" id="beam-slider" style="width:160px">
+              <span class="form-label" style="font-size:12px;margin:0;min-width:90px" id="beam-value" data-i18n="slider.good">Good</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--fg-secondary);padding:0 2px;width:160px">
+              <span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.fast">Fast</span><span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.best">Best</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.creativity">Creativity</div>
+            <div class="form-hint" data-i18n="dictation.creativity.hint">Low = stable, predictable results. Increase if the model struggles with accents or unusual speech.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="0" max="4" value="1" id="whisper-temp-slider" style="width:160px">
+              <span class="form-label" style="font-size:12px;margin:0;min-width:90px" id="whisper-temp-value" data-i18n="slider.low">Low</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--fg-secondary);padding:0 2px;width:160px">
+              <span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.stable">Stable</span><span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.creative">Creative</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.audioProcessing">Audio Processing</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.noiseSuppression">Noise suppression (RNNoise)</div>
+            <div class="form-hint" data-i18n="dictation.noiseSuppression.hint">Removes background noise — keyboard typing, fan hum, air conditioning. Recommended on for all environments. Uses a small neural network, no noticeable CPU impact.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-rnnoise" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.agc">Auto volume leveling (AGC)</div>
+            <div class="form-hint" data-i18n="dictation.agc.hint">Automatically adjusts your microphone volume so you're always heard clearly — whether you speak quietly or loudly, close or far from the mic. The target level below controls how loud the output should be.</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-agc" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.targetVolume">Target volume level</div>
+            <div class="form-hint" data-i18n="dictation.targetVolume.hint">How loud your voice should be after auto-leveling. "Clear voice" works for most people.</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;min-width:200px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="0" max="4" value="2" id="rms-slider" style="width:160px">
+              <span style="font-size:12px;font-weight:600;color:var(--accent-highlight);min-width:90px" id="rms-value" data-i18n="slider.clearVoice">Clear voice</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--fg-secondary);padding:0 2px;width:160px">
+              <span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.quiet">Quiet</span><span class="form-hint" style="font-size:inherit;margin:0" data-i18n="slider.loud">Loud</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.vadSensitivity">Voice detection sensitivity</div>
+            <div class="form-hint" data-i18n="dictation.vadSensitivity.hint">Controls how aggressively the app detects when you stop talking. Lower = more sensitive, catches soft speech but may include background noise. Higher = stricter, cleanly cuts silence but may trim quiet endings. Level 2 works well for most people.</div>
+          </div>
+          <select id="vad-select"><option data-i18n="dictation.vad.0">0 — Very sensitive (catches quiet speech)</option><option data-i18n="dictation.vad.1">1 — Sensitive</option><option selected data-i18n="dictation.vad.2">2 — Balanced (recommended)</option><option data-i18n="dictation.vad.3">3 — Strict (clean cuts, may trim quiet endings)</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.contextFormatting">Context-Aware Formatting</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.adaptStyle">Adapt style to active app</div>
+            <div class="form-hint" data-i18n="dictation.adaptStyle.hint">Casual in Slack, formal in Word, technical in VS Code</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-context-style" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.defaultStyle">Default style</div>
+            <div class="form-hint" data-i18n="dictation.defaultStyle.hint">Used for apps without a specific style</div>
+          </div>
+          <select id="default-style-select"><option selected data-i18n="style.neutral">Neutral</option><option data-i18n="style.casual">Casual</option><option data-i18n="style.formal">Formal</option><option data-i18n="style.technical">Technical</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.appStyles">App Styles</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="dictation.appStyles.hint">Configure dictation style per application</div>
+        <table class="table" id="app-styles-table">
+          <thead><tr><th data-i18n="dictation.col.app">Application</th><th data-i18n="dictation.col.style">Style</th><th data-i18n="dictation.col.injection">Injection</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><span style="font-size:14px">&#128172;</span> slack.exe</td><td><select style="min-width:100px"><option selected data-i18n="style.casual">Casual</option><option data-i18n="style.formal">Formal</option><option data-i18n="style.technical">Technical</option><option data-i18n="style.email">Email</option></select></td><td><select style="min-width:100px"><option selected data-i18n="injection.keyboard">Keyboard</option><option data-i18n="injection.clipboard">Clipboard</option></select></td><td><button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td><span style="font-size:14px">&#128187;</span> code.exe</td><td><select style="min-width:100px"><option data-i18n="style.casual">Casual</option><option data-i18n="style.formal">Formal</option><option selected data-i18n="style.technical">Technical</option><option data-i18n="style.email">Email</option></select></td><td><select style="min-width:100px"><option selected data-i18n="injection.keyboard">Keyboard</option><option data-i18n="injection.clipboard">Clipboard</option></select></td><td><button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td><span style="font-size:14px">&#128231;</span> outlook.exe</td><td><select style="min-width:100px"><option data-i18n="style.casual">Casual</option><option data-i18n="style.formal">Formal</option><option data-i18n="style.technical">Technical</option><option selected data-i18n="style.email">Email</option></select></td><td><select style="min-width:100px"><option data-i18n="injection.keyboard">Keyboard</option><option selected data-i18n="injection.clipboard">Clipboard</option></select></td><td><button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td><span style="font-size:14px">&#128196;</span> WINWORD.EXE</td><td><select style="min-width:100px"><option data-i18n="style.casual">Casual</option><option selected data-i18n="style.formal">Formal</option><option data-i18n="style.technical">Technical</option><option data-i18n="style.email">Email</option></select></td><td><select style="min-width:100px"><option selected data-i18n="injection.keyboard">Keyboard</option><option data-i18n="injection.clipboard">Clipboard</option></select></td><td><button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td><span style="font-size:14px">&#128421;</span> WindowsTerminal.exe</td><td><select style="min-width:100px"><option data-i18n="style.casual">Casual</option><option data-i18n="style.formal">Formal</option><option selected data-i18n="style.technical">Technical</option><option data-i18n="style.email">Email</option></select></td><td><select style="min-width:100px"><option selected data-i18n="injection.keyboard">Keyboard</option><option data-i18n="injection.clipboard">Clipboard</option></select></td><td><button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px"><button class="btn btn-sm btn-primary" id="btn-add-app" data-i18n="dictation.addApp">+ Add Application</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.textInjection">Text Injection</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.defaultInjection">Default injection method</div>
+            <div class="form-hint" data-i18n="dictation.defaultInjection.hint">How text is typed into the target app</div>
+          </div>
+          <select id="injection-method-select"><option selected data-i18n="injection.sendInput">Keyboard simulation (SendInput)</option><option data-i18n="injection.clipboard">Clipboard paste (Ctrl+V)</option><option data-i18n="injection.uiAutomation">UI Automation (SetValue)</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="dictation.fallbackClipboard">Auto-fallback to clipboard on failure</div>
+          <label class="toggle"><input type="checkbox" id="toggle-fallback-clipboard" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.typingSpeed">Typing speed</div>
+            <div class="form-hint" data-i18n="dictation.typingSpeed.hint">Delay between keystrokes (0 = instant)</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="input-typing-speed" value="0" min="0" max="50" step="5" style="width:60px">
+            <span class="form-hint" data-i18n="unit.ms">ms</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictation.terminalSafety">Terminal Safety</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.sanitizeTerminal">Sanitize terminal input</div>
+            <div class="form-hint" data-i18n="dictation.sanitizeTerminal.hint">Strip shell metacharacters (|, &amp;, ;, $(), etc.)</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-sanitize-terminal" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="dictation.confirmMultiline">Confirm multi-line in terminal</div>
+            <div class="form-hint" data-i18n="dictation.confirmMultiline.hint">Show confirmation dialog before pasting multi-line text</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-confirm-multiline" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== DICTIONARY ==================== -->
+    <div class="content" id="page-dictionary" data-page="dictionary">
+      <div class="page-title" data-i18n="page.dictionary">Dictionary</div>
+      <div class="banner banner-info" style="display:flex;gap:4px"><span>&#9889;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="dictionary.infoBanner">Most words are learned automatically from your corrections (double-tap feedback). Add terms here only if the app hasn't learned them yet.</span></div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictionary.statistics">Statistics</div>
+        <div style="display:flex;gap:16px;margin-bottom:4px">
+          <div style="flex:1;background:var(--bg-input);border-radius:var(--radius-card);padding:10px 12px;text-align:center">
+            <div style="font-size:24px;font-weight:700;color:var(--accent-highlight)" id="dict-total-count">1,247</div>
+            <div class="form-hint" style="font-size:11px" data-i18n="dictionary.totalTerms">Total terms</div>
+          </div>
+          <div style="flex:1;background:var(--bg-input);border-radius:var(--radius-card);padding:10px 12px;text-align:center">
+            <div style="font-size:24px;font-weight:700;color:var(--success)" id="dict-auto-count">1,203</div>
+            <div class="form-hint" style="font-size:11px" data-i18n="dictionary.autoLearned">Auto-learned</div>
+          </div>
+          <div style="flex:1;background:var(--bg-input);border-radius:var(--radius-card);padding:10px 12px;text-align:center">
+            <div style="font-size:24px;font-weight:700;color:var(--fg-primary)" id="dict-manual-count">44</div>
+            <div class="form-hint" style="font-size:11px" data-i18n="dictionary.addedManually">Added manually</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictionary.addTerm">Add Term</div>
+        <div class="form-hint" style="margin-bottom:8px" data-i18n="dictionary.addTerm.hint">Specialized terms, names, abbreviations that the model doesn't recognize correctly.</div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="dict-input" placeholder="e.g. PyWebView, CTranslate2..." style="flex:1">
+          <button class="btn btn-primary btn-sm" id="btn-add-dict" data-i18n="dictionary.add">Add</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictionary.search">Search</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" id="dict-search" placeholder="Search dictionary..." style="flex:1">
+        </div>
+        <div id="dict-list" style="background:var(--bg-input);border-radius:var(--radius-input);max-height:200px;overflow-y:auto">
+          <div class="form-row dict-item" style="padding:6px 12px"><span>PyWebView</span><span class="badge badge-info" style="margin-left:8px;font-size:9px" data-i18n="dictionary.manual">manual</span><button class="btn btn-sm btn-danger dict-del" style="margin-left:auto">&#10005;</button></div>
+          <div class="form-row dict-item" style="padding:6px 12px"><span>PyAudio</span><span class="badge badge-info" style="margin-left:8px;font-size:9px" data-i18n="dictionary.manual">manual</span><button class="btn btn-sm btn-danger dict-del" style="margin-left:auto">&#10005;</button></div>
+          <div class="form-row dict-item" style="padding:6px 12px"><span>pycaw</span><span class="badge" style="margin-left:8px;font-size:9px;background:rgba(76,175,80,0.15);color:var(--success)" data-i18n="dictionary.auto">auto</span><button class="btn btn-sm btn-danger dict-del" style="margin-left:auto">&#10005;</button></div>
+        </div>
+        <div class="form-hint" style="margin-top:6px" data-i18n="dictionary.showingResults">Showing 3 results for "py"</div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="dictionary.importExport">Import / Export</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" id="btn-import-dict" data-i18n="dictionary.import">Import</button>
+          <button class="btn btn-sm" id="btn-export-dict" data-i18n="dictionary.export">Export</button>
+        </div>
+        <div class="form-hint" style="margin-top:6px" data-i18n="dictionary.importExport.hint">Import from .txt (one word per line) or .json. Export as .json.</div>
+      </div>
+    </div>
+
+    <!-- ==================== REPLACEMENTS ==================== -->
+    <div class="content" id="page-replacements" data-page="replacements">
+      <div class="page-title" data-i18n="page.replacements">Text Replacements</div>
+      <div class="banner banner-info" style="display:flex;gap:4px"><span>&#128161;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="replacements.infoBanner">Replacements run BEFORE LLM normalization. Fuzzy tolerance scales with phrase length (0 for &lt;5 chars, 1 for 5-10, 2 for 11+).</span></div>
+      <div class="card">
+        <div class="card-title" data-i18n="replacements.voiceMacros">Voice Macros</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="replacements.voiceMacros.hint">Say the trigger phrase to auto-replace with text. Searched as substring within full transcript.</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" id="repl-search" placeholder="Search replacements..." style="flex:1">
+        </div>
+        <table class="table" id="replacements-table">
+          <thead><tr><th data-i18n="replacements.col.trigger">Trigger</th><th data-i18n="replacements.col.replacement">Replacement</th><th data-i18n="replacements.col.match">Match</th><th data-i18n="replacements.col.enc">Enc.</th><th></th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent-highlight);font-weight:500">"my email"</td><td>dmitry@example.com</td><td><span class="badge badge-info" data-i18n="replacements.fuzzy">Fuzzy</span></td><td><span class="badge badge-warning">&#128274;</span></td><td style="white-space:nowrap"><button class="btn btn-sm btn-edit-repl" data-trigger="my email" data-text="dmitry@example.com" data-mode="fuzzy" data-sensitive="true" data-i18n="replacements.edit">Edit</button> <button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td style="color:var(--accent-highlight);font-weight:500">"office address"</td><td>Khreshchatyk 22, office 301</td><td><span class="badge badge-info" data-i18n="replacements.fuzzy">Fuzzy</span></td><td></td><td style="white-space:nowrap"><button class="btn btn-sm btn-edit-repl" data-trigger="office address" data-text="Khreshchatyk 22, office 301" data-mode="fuzzy" data-sensitive="false" data-i18n="replacements.edit">Edit</button> <button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td style="color:var(--accent-highlight);font-weight:500">"meeting link"</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://meet.google.com/abc-defg-hij</td><td><span class="badge badge-info" data-i18n="replacements.fuzzy">Fuzzy</span></td><td></td><td style="white-space:nowrap"><button class="btn btn-sm btn-edit-repl" data-trigger="meeting link" data-text="https://meet.google.com/abc-defg-hij" data-mode="fuzzy" data-sensitive="false" data-i18n="replacements.edit">Edit</button> <button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td style="color:var(--accent-highlight);font-weight:500">"signature"</td><td style="white-space:pre-line;font-size:11px">Regards,&#10;Dmitry Ivanov&#10;Senior Engineer</td><td><span class="badge badge-warning" data-i18n="replacements.strict">Strict</span></td><td></td><td style="white-space:nowrap"><button class="btn btn-sm btn-edit-repl" data-trigger="signature" data-text="Regards,&#10;Dmitry Ivanov&#10;Senior Engineer" data-mode="strict" data-sensitive="false" data-i18n="replacements.edit">Edit</button> <button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+            <tr><td style="color:var(--accent-highlight);font-weight:500">"phone"</td><td>+380 50 123 4567</td><td><span class="badge badge-info" data-i18n="replacements.fuzzy">Fuzzy</span></td><td><span class="badge badge-warning">&#128274;</span></td><td style="white-space:nowrap"><button class="btn btn-sm btn-edit-repl" data-trigger="phone" data-text="+380 50 123 4567" data-mode="fuzzy" data-sensitive="true" data-i18n="replacements.edit">Edit</button> <button class="btn btn-sm btn-danger">&#10005;</button></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" id="btn-add-repl" data-i18n="replacements.addRepl">+ Add Replacement</button>
+          <button class="btn btn-sm" id="btn-import-repl" data-i18n="dictionary.import">Import</button>
+          <button class="btn btn-sm" id="btn-export-repl" data-i18n="dictionary.export">Export</button>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px"><span class="form-hint" style="margin:0" data-i18n="replacements.count">5 replacements</span><span class="form-hint" style="margin:0">&middot;</span><span class="form-hint" style="margin:0" data-i18n="replacements.sensitiveCount">2 sensitive (DPAPI encrypted)</span></div>
+      </div>
+    </div>
+
+    <!-- ==================== INSTRUCTIONS ==================== -->
+    <div class="content" id="page-instructions" data-page="instructions">
+      <div class="page-title" data-i18n="page.instructions">Per-App Instructions</div>
+      <div class="banner banner-info" style="display:flex;gap:4px"><span>&#128161;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="instructions.infoBanner">Per-app instructions are sent to the LLM together with the dictation. They override global normalization settings for the selected app.</span></div>
+
+      <!-- Presets -->
+      <div class="card">
+        <div class="card-title" data-i18n="instructions.presets">Presets</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="instructions.presets.hint">Built-in scripts. Assign them to apps below or use as a base for custom scripts.</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:18px">&#128172;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0" data-i18n="instructions.preset.messenger">Messenger</div>
+              <div class="form-hint" data-i18n="instructions.preset.messenger.hint">Informal style, no caps at start, minimal punctuation, emoji-friendly</div>
+            </div>
+            <span class="badge badge-info" data-i18n="instructions.builtIn">Built-in</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:18px">&#128231;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0" data-i18n="instructions.preset.email">Email</div>
+              <div class="form-hint" data-i18n="instructions.preset.email.hint">Formal style, proper punctuation, greeting and signature preserved</div>
+            </div>
+            <span class="badge badge-info" data-i18n="instructions.builtIn">Built-in</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:18px">&#128187;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0" data-i18n="instructions.preset.codeEditor">Code Editor</div>
+              <div class="form-hint" data-i18n="instructions.preset.codeEditor.hint">English only, code-aware formatting, camelCase/snake_case preserved</div>
+            </div>
+            <span class="badge badge-info" data-i18n="instructions.builtIn">Built-in</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:18px">&#128196;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0" data-i18n="instructions.preset.document">Document</div>
+              <div class="form-hint" data-i18n="instructions.preset.document.hint">Formal style, full sentences, paragraph breaks on long pauses</div>
+            </div>
+            <span class="badge badge-info" data-i18n="instructions.builtIn">Built-in</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-App Rules -->
+      <div class="card">
+        <div class="card-title" data-i18n="instructions.appRules">App Rules</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="instructions.appRules.hint">Assign scripts to detected applications. Apps without a rule use global normalization settings.</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px" id="app-rules-list">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <div class="app-name" style="flex-shrink:0;font-weight:500;min-width:100px">slack.exe</div>
+            <select style="flex:1"><option selected>Messenger</option><option>Email</option><option>Code Editor</option><option>Document</option><option>My Slack Rules</option></select>
+            <button class="btn btn-sm" id="btn-app-instr-slack" data-i18n="replacements.edit">Edit</button>
+            <button class="btn btn-sm btn-danger">&#10005;</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <div class="app-name" style="flex-shrink:0;font-weight:500;min-width:100px">code.exe</div>
+            <select style="flex:1"><option>Messenger</option><option>Email</option><option selected>Code Editor</option><option>Document</option></select>
+            <button class="btn btn-sm" id="btn-app-instr-code" data-i18n="replacements.edit">Edit</button>
+            <button class="btn btn-sm btn-danger">&#10005;</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <div class="app-name" style="flex-shrink:0;font-weight:500;min-width:100px">outlook.exe</div>
+            <select style="flex:1"><option>Messenger</option><option selected>Email</option><option>Code Editor</option><option>Document</option></select>
+            <button class="btn btn-sm" data-i18n="replacements.edit">Edit</button>
+            <button class="btn btn-sm btn-danger">&#10005;</button>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-primary" id="btn-add-app-instr" data-i18n="instructions.addAppRule">+ Add App Rule</button>
+      </div>
+
+      <!-- Custom Scripts -->
+      <div class="card">
+        <div class="card-title" data-i18n="instructions.customScripts">Custom Scripts</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="instructions.customScripts.hint">Create your own scripts. Available in the App Rules dropdown above.</div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px" id="custom-scripts-list">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:18px">&#128221;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0" data-i18n="instructions.mySlackRules">My Slack Rules</div>
+              <div class="form-hint" data-i18n="instructions.mySlackRules.hint">all lowercase, no periods, short sentences</div>
+            </div>
+            <button class="btn btn-sm" data-open="modal-edit-script" data-i18n="replacements.edit">Edit</button>
+            <button class="btn btn-sm btn-danger">&#10005;</button>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-primary" data-open="modal-edit-script" data-i18n="instructions.newScript">+ New Script</button>
+      </div>
+    </div>
+
+    <!-- ==================== HISTORY ==================== -->
+    <div class="content" id="page-history" data-page="history">
+      <div class="page-title" data-i18n="page.history">History</div>
+      <div class="card" style="padding:12px">
+        <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
+          <div class="search-wrap" style="flex:1;margin-bottom:0">
+            <span class="search-icon">&#128269;</span>
+            <input type="text" id="history-search" placeholder="Search dictations..." style="width:100%;padding-left:32px">
+          </div>
+          <button class="btn btn-sm btn-danger" id="batch-delete-btn" style="display:none" data-i18n="history.deleteSelected">Delete selected</button>
+        </div>
+        <div class="filter-bar" id="history-filters">
+          <span class="form-hint" data-i18n="history.filter">Filter:</span>
+          <span class="filter-chip active" data-i18n="history.all">All</span>
+          <span class="filter-chip" data-i18n="history.today">Today</span>
+          <span class="filter-chip" data-i18n="history.thisWeek">This week</span>
+          <span class="filter-chip" data-i18n="history.thisMonth">This month</span>
+          <span class="filter-chip" style="margin-left:auto">&#128172; Slack</span>
+          <span class="filter-chip">&#128187; VS Code</span>
+          <span class="filter-chip">&#128231; Outlook</span>
+          <span class="filter-chip">&#127760; Chrome</span>
+        </div>
+
+        <div class="history-item">
+          <input type="checkbox" class="history-checkbox">
+          <div class="history-preview">
+            <div class="history-text">Meeting tomorrow at 10am, discuss the deployment pipeline and review the staging environment.</div>
+            <div class="history-meta">Today 14:32 &middot; &#128172; Slack &middot; 14 words &middot; 3.2s &middot; <span style="color:var(--success)">94%</span></div>
+            <div class="history-expanded">
+              <div class="history-expanded-label" data-i18n="history.rawSTT">Raw STT output</div>
+              <div class="history-expanded-text" style="color:var(--fg-secondary)">meeting tomorrow at ten AM discuss the deployment pipeline and review the staging environment</div>
+              <div class="history-expanded-label" data-i18n="history.normalized">Normalized output</div>
+              <div class="history-expanded-text">Meeting tomorrow at 10am, discuss the deployment pipeline and review the staging environment.</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-sm" data-i18n="history.copyRaw">Copy raw</button>
+                <button class="btn btn-sm" data-i18n="history.copyNormalized">Copy normalized</button>
+                <button class="btn btn-sm" data-i18n="history.renormalize">Re-normalize</button>
+              </div>
+            </div>
+          </div>
+          <div class="history-actions"><button class="btn btn-sm" data-i18n="history.copy">Copy</button></div>
+        </div>
+
+        <div class="history-item">
+          <input type="checkbox" class="history-checkbox">
+          <div class="history-preview">
+            <div class="history-text">Please review the PR when you get a chance, I've addressed all the comments from yesterday.</div>
+            <div class="history-meta">Today 13:15 &middot; &#128187; VS Code &middot; 18 words &middot; 5.1s &middot; <span style="color:var(--success)">97%</span></div>
+            <div class="history-expanded">
+              <div class="history-expanded-label" data-i18n="history.rawSTT">Raw STT output</div>
+              <div class="history-expanded-text" style="color:var(--fg-secondary)">please review the PR when you get a chance I've addressed all the comments from yesterday</div>
+              <div class="history-expanded-label" data-i18n="history.normalized">Normalized output</div>
+              <div class="history-expanded-text">Please review the PR when you get a chance, I've addressed all the comments from yesterday.</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-sm" data-i18n="history.copyRaw">Copy raw</button>
+                <button class="btn btn-sm" data-i18n="history.copyNormalized">Copy normalized</button>
+                <button class="btn btn-sm" data-i18n="history.renormalize">Re-normalize</button>
+              </div>
+            </div>
+          </div>
+          <div class="history-actions"><button class="btn btn-sm" data-i18n="history.copy">Copy</button></div>
+        </div>
+
+        <div class="history-item">
+          <input type="checkbox" class="history-checkbox">
+          <div class="history-preview">
+            <div class="history-text">The integration tests are passing but we need to add coverage for the new audio pipeline thread.</div>
+            <div class="history-meta">Today 11:48 &middot; &#128421; Terminal &middot; 16 words &middot; 4.8s &middot; <span style="color:var(--success)">92%</span></div>
+            <div class="history-expanded">
+              <div class="history-expanded-label" data-i18n="history.rawSTT">Raw STT output</div>
+              <div class="history-expanded-text" style="color:var(--fg-secondary)">the integration tests are passing but we need to add coverage for the new audio pipeline thread</div>
+              <div class="history-expanded-label" data-i18n="history.normalized">Normalized output</div>
+              <div class="history-expanded-text">The integration tests are passing but we need to add coverage for the new audio pipeline thread.</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-sm" data-i18n="history.copyRaw">Copy raw</button>
+                <button class="btn btn-sm" data-i18n="history.copyNormalized">Copy normalized</button>
+                <button class="btn btn-sm" data-i18n="history.renormalize">Re-normalize</button>
+              </div>
+            </div>
+          </div>
+          <div class="history-actions"><button class="btn btn-sm" data-i18n="history.copy">Copy</button></div>
+        </div>
+
+        <div class="history-item">
+          <input type="checkbox" class="history-checkbox">
+          <div class="history-preview">
+            <div class="history-text">Dear team, I wanted to share the quarterly results which show a 23% improvement in recognition accuracy.</div>
+            <div class="history-meta">Yesterday 17:20 &middot; &#128231; Outlook &middot; 17 words &middot; 6.3s &middot; <span style="color:var(--success)">96%</span></div>
+            <div class="history-expanded">
+              <div class="history-expanded-label" data-i18n="history.rawSTT">Raw STT output</div>
+              <div class="history-expanded-text" style="color:var(--fg-secondary)">dear team I wanted to share the quarterly results which show a twenty three percent improvement in recognition accuracy</div>
+              <div class="history-expanded-label" data-i18n="history.normalized">Normalized output</div>
+              <div class="history-expanded-text">Dear team, I wanted to share the quarterly results which show a 23% improvement in recognition accuracy.</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-sm" data-i18n="history.copyRaw">Copy raw</button>
+                <button class="btn btn-sm" data-i18n="history.copyNormalized">Copy normalized</button>
+                <button class="btn btn-sm" data-i18n="history.renormalize">Re-normalize</button>
+              </div>
+            </div>
+          </div>
+          <div class="history-actions"><button class="btn btn-sm" data-i18n="history.copy">Copy</button></div>
+        </div>
+
+        <div class="history-item">
+          <input type="checkbox" class="history-checkbox">
+          <div class="history-preview">
+            <div class="history-text" style="color:var(--fg-secondary);font-style:italic" data-i18n="history.speakerRejected">[Speaker rejected — not recognized]</div>
+            <div class="history-meta">Yesterday 16:45 &middot; &#128172; Slack &middot; rejected &middot; <span style="color:var(--error)">blocked</span></div>
+          </div>
+          <div class="history-actions"><button class="btn btn-sm" disabled data-i18n="history.copy">Copy</button></div>
+        </div>
+
+        <div style="text-align:center;padding:12px;color:var(--fg-secondary);font-size:12px">
+          Showing 5 of 342 dictations &middot; <a href="#" style="color:var(--accent-highlight)" id="btn-load-more" data-i18n="history.loadMore">Load more</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="history.settings">History Settings</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="history.sensitiveMode">Sensitive mode</div>
+            <div class="form-hint" data-i18n="history.sensitiveMode.hint">Pause history recording (for passwords, confidential text)</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-sensitive-mode"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="history.retention">Retention period</div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="input-retention" value="90" min="1" max="365" style="min-width:70px">
+            <span class="form-hint" data-i18n="unit.days">days</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="history.storeRaw">Store raw STT output</div>
+          <label class="toggle"><input type="checkbox" id="toggle-store-raw" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="history.encrypt">Encrypt history (DPAPI)</div>
+            <div class="form-hint" data-i18n="history.encrypt.hint">Encrypt raw_text and normalized_text columns</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-encrypt-history" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== SPEAKER LOCK ==================== -->
+    <div class="content" id="page-speaker" data-page="speaker">
+      <div class="page-title" data-i18n="page.speaker">Speaker Lock</div>
+      <div class="card" style="text-align:center;padding:24px">
+        <div class="voice-circle enrolled" id="voice-profile-icon">&#10003;</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:4px" data-i18n="speaker.enrolled">Voice Profile Enrolled</div>
+        <div class="form-hint" id="voice-profile-meta">Recorded on Mar 25, 2026 &middot; 4.2 seconds &middot; ONNX encoder</div>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+          <button class="btn btn-primary btn-sm" id="btn-reenroll" data-i18n="speaker.rerecord">Re-record</button>
+          <button class="btn btn-sm btn-danger" id="btn-delete-profile" data-i18n="speaker.deleteProfile">Delete Profile</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="page.general">Settings</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="speaker.enable">Enable Speaker Lock</div>
+            <div class="form-hint" data-i18n="speaker.enable.hint">Only accept dictation from your voice</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-speaker-lock" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="speaker.threshold">Similarity threshold</div>
+            <div class="form-hint" data-i18n="speaker.threshold.hint">How strictly to check your voice. Turn down if it rejects you too often.</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="range" min="30" max="95" value="65" id="speaker-thresh">
+            <span style="font-size:12px;color:var(--fg-secondary);min-width:35px" id="speaker-thresh-val">0.65</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="speaker.timeout">If voice check takes too long</div>
+            <div class="form-hint" data-i18n="speaker.timeout.hint">What to do if your voice can't be verified within 10 seconds</div>
+          </div>
+          <select id="speaker-timeout-select" style="min-width:160px"><option selected data-i18n="speaker.timeout.block">Block dictation</option><option data-i18n="speaker.timeout.allow">Allow dictation</option></select>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="speaker.logRejected">Log rejected attempts</div>
+            <div class="form-hint" data-i18n="speaker.logRejected.hint">Save rejected attempts to history for review</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-log-rejected" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="speaker.security">Security</div>
+        <div class="form-row">
+          <div style="display:flex;gap:6px;align-items:center"><span style="color:var(--success)">&#128274;</span><span class="form-label" style="margin:0" data-i18n="speaker.dpapi">Voice profile encrypted with Windows DPAPI</span></div>
+        </div>
+        <div class="form-row">
+          <div style="display:flex;gap:6px;align-items:center"><span style="color:var(--success)">&#9989;</span><span class="form-label" style="margin:0" data-i18n="speaker.onnx">ONNX speaker encoder (no PyTorch dependency)</span></div>
+        </div>
+        <div class="form-row">
+          <div style="display:flex;gap:6px;align-items:center"><span style="color:var(--success)">&#9989;</span><span class="form-label" style="margin:0" data-i18n="speaker.sha256">SHA-256 model integrity verified</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TRANSLATE ==================== -->
+    <div class="content" id="page-translate" data-page="translate">
+      <div class="page-title" data-i18n="page.translate">Translation</div>
+      <div class="card">
+        <div class="card-title" data-i18n="translate.providers">Translation Providers</div>
+        <div class="form-hint" style="margin-bottom:4px" data-i18n="translate.providers.hint">Three providers in priority order for page translation via extension.</div>
+        <div style="margin-bottom:12px"><a href="#" class="form-hint" style="color:var(--accent-highlight);text-decoration:underline;cursor:pointer;font-size:12px" data-open="modal-help-providers" data-i18n="translate.recommendedLink">Recommended services (GitHub README)</a></div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent-highlight)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--accent-highlight);color:#000;font-size:10px;padding:2px 6px">1</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="translate-provider-1"><option selected>Groq</option><option>OpenAI</option><option>Anthropic</option><option>Google Translate</option><option>DeepL</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="translate-key-1" value="gsk_xxxxxxxxxxxxxxxxxxxx" style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-success" data-i18n="badge.valid">Valid</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fg-secondary)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--fg-secondary);color:#000;font-size:10px;padding:2px 6px">2</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="translate-provider-2"><option>Groq</option><option selected>OpenAI</option><option>Anthropic</option><option>Google Translate</option><option>DeepL</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="translate-key-2" placeholder="sk-..." style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-warning" data-i18n="badge.notSet">Not set</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fg-secondary)">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px"><span class="badge" style="background:var(--fg-secondary);color:#000;font-size:10px;padding:2px 6px">3</span> <span class="form-label" style="font-size:inherit;margin:0;font-weight:inherit" data-i18n="provider">Provider</span></div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="provider">Provider</div>
+          <select id="translate-provider-3"><option>Groq</option><option>OpenAI</option><option selected>Anthropic</option><option>Google Translate</option><option>DeepL</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="apiKey">API Key</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" id="translate-key-3" placeholder="sk-ant-..." style="min-width:200px" class="api-key-field">
+            <button class="btn btn-sm btn-toggle-key">&#128065;</button>
+            <span class="badge badge-warning" data-i18n="badge.notSet">Not set</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="page.translate">Translation</div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="translate.enablePage">Enable page translation</div>
+          <label class="toggle"><input type="checkbox" id="toggle-page-translation" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="translate.targetLang">Target language</div>
+          <select id="translate-target-select"><option selected data-i18n="translate.lang.uk">Ukrainian</option><option data-i18n="translate.lang.en">English</option><option data-i18n="translate.lang.ru">Russian</option><option data-i18n="translate.lang.de">German</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="translate.browserDictation">Dictation in Browser</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="translate.enableBrowserDictation">Enable browser dictation</div>
+            <div class="form-hint" data-i18n="translate.enableBrowserDictation.hint">Dictate into web form fields via extension</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-browser-dictation" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="translate.usePageContext">Use page context</div>
+            <div class="form-hint" data-i18n="translate.usePageContext.hint">Send page domain to LLM for context (not full URL/title)</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-page-context" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="translate.browserExtension">Browser Extension</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="translate.browserExtension.hint">Install the extension to enable page translation and browser dictation.</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px" id="browser-list">
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:20px">&#127760;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0">Google Chrome</div>
+              <div class="form-hint" style="font-size:11px">v125.0 &middot; C:\Program Files\Google\Chrome\Application\chrome.exe</div>
+            </div>
+            <span class="badge badge-success" data-i18n="translate.installed">Installed</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:20px">&#128316;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0">Microsoft Edge</div>
+              <div class="form-hint" style="font-size:11px">v124.0 &middot; C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe</div>
+            </div>
+            <button class="btn btn-sm btn-primary" data-open="modal-install-extension" data-i18n="translate.install">Install</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--bg-input);border-radius:var(--radius-card)">
+            <span style="font-size:20px">&#128038;</span>
+            <div style="flex:1">
+              <div class="form-label" style="margin:0">Brave</div>
+              <div class="form-hint" style="font-size:11px">v1.65 &middot; C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe</div>
+            </div>
+            <button class="btn btn-sm btn-primary" data-open="modal-install-extension" data-i18n="translate.install">Install</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-sm" id="btn-rescan-browsers" data-i18n="translate.rescan">Rescan browsers</button>
+          <span class="form-hint" data-i18n="translate.lastScan">Last scan: just now</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="speaker.security">Security</div>
+        <div style="margin-bottom:12px">
+          <div class="form-label" data-i18n="translate.sharedSecret">Shared secret</div>
+          <div class="form-hint" style="margin-bottom:8px" data-i18n="translate.sharedSecret.hint">Authentication between extension and backend</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="password" value="xxxxxxxxxxxxxxxx" style="flex:1" disabled id="secret-field">
+            <button class="btn btn-sm" id="btn-toggle-secret">&#128065;</button>
+            <button class="btn btn-sm btn-danger" id="btn-regen-secret" data-i18n="translate.regenerate">Regenerate</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label" style="display:flex;gap:4px;align-items:center"><span style="color:var(--success)">&#128274;</span> <span class="form-hint" style="font-size:inherit;margin:0;color:inherit;font-weight:inherit" data-i18n="translate.httpBound">HTTP server bound to 127.0.0.1 only</span></div>
+        </div>
+        <div class="form-row">
+          <div class="form-label" style="display:flex;gap:4px;align-items:center"><span style="color:var(--success)">&#128274;</span> <span class="form-hint" style="font-size:inherit;margin:0;color:inherit;font-weight:inherit" data-i18n="translate.corsRestricted">CORS restricted to extension origin</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== OFFLINE ==================== -->
+    <div class="content" id="page-offline" data-page="offline">
+      <div class="page-title" data-i18n="page.offline">Offline Mode</div>
+      <div class="card" style="border-left:3px solid var(--accent-highlight)">
+        <div class="card-title" data-i18n="offline.systemDetection">System Detection</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="offline.systemDetection.hint">Detect your hardware and automatically select the best offline models for your system.</div>
+        <div style="display:flex;gap:12px;align-items:stretch;margin-bottom:12px">
+          <div style="flex:1;background:var(--bg-input);border-radius:var(--radius-card);padding:10px 12px">
+            <div style="font-size:10px;color:var(--fg-secondary);margin-bottom:2px">CPU</div>
+            <div style="font-size:13px;font-weight:500" id="sys-cpu">Intel Core i7-12700K</div>
+            <div style="font-size:11px;color:var(--fg-secondary)">16 cores &middot; 24 threads</div>
+          </div>
+          <div style="flex:1;background:var(--bg-input);border-radius:var(--radius-card);padding:10px 12px">
+            <div style="font-size:10px;color:var(--fg-secondary);margin-bottom:2px">GPU</div>
+            <div style="font-size:13px;font-weight:500" id="sys-gpu">NVIDIA RTX 3060</div>
+            <div style="font-size:11px;color:var(--fg-secondary)">12 GB VRAM &middot; CUDA 12.2</div>
+          </div>
+          <div style="flex:1;background:var(--bg-input);border-radius:var(--radius-card);padding:10px 12px">
+            <div style="font-size:10px;color:var(--fg-secondary);margin-bottom:2px">RAM</div>
+            <div style="font-size:13px;font-weight:500" id="sys-ram">32 GB</div>
+            <div style="font-size:11px;color:var(--fg-secondary)">Free: 18.4 GB</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" id="btn-detect-system"><span>&#128270;</span> <span class="btn-text" data-i18n="offline.detect">Detect &amp; recommend models</span></button>
+          <button class="btn btn-sm" id="btn-download-recommended"><span>&#11015;</span> <span class="btn-text" data-i18n="offline.downloadRecommended">Download recommended</span></button>
+        </div>
+        <div class="form-hint" style="margin-top:8px"><span class="form-label" style="font-size:inherit;margin:0;font-weight:normal" data-i18n="offline.recommendation">Recommendation:</span> <strong style="color:var(--accent-highlight)">GPU mode</strong> — Whisper Large V3 Turbo fp16 + Qwen2.5-1.5B fp16 (total ~2.8 GB VRAM)</div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="offline.diskSpace">Disk Space</div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span class="form-hint" style="font-size:inherit;margin:0" data-i18n="offline.used">Used: 1.8 GB</span>
+          <span class="form-hint" style="font-size:inherit;margin:0" data-i18n="offline.models">Models: 1.4 GB</span>
+          <span class="form-hint" style="font-size:inherit;margin:0;color:var(--success)" data-i18n="offline.free">Free: 48.3 GB</span>
+        </div>
+        <div class="disk-bar">
+          <div class="disk-used" style="width:3%"></div>
+          <div class="disk-models" style="width:2.5%"></div>
+          <div class="disk-free"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="offline.sttModels">STT Models</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="offline.sttModels.hint">Speech recognition models (CTranslate2 / faster-whisper)</div>
+        <div class="model-card">
+          <div class="model-icon">&#127908;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.whisperTurboGPU">Whisper Large V3 Turbo — fp16 (GPU)</div>
+            <div class="model-desc" data-i18n="offline.model.whisperTurboGPU.desc">Best quality for GPU. 809M params, fast and accurate.</div>
+            <div class="model-size" data-i18n="offline.model.whisperTurboGPU.size">1.6 GB &middot; ~50x realtime on GPU &middot; Requires 6 GB VRAM</div>
+          </div>
+          <div class="model-actions">
+            <span class="badge badge-success" data-i18n="offline.downloaded">Downloaded</span>
+            <button class="btn btn-sm btn-danger" style="margin-left:8px" id="btn-delete-model" data-i18n="offline.delete">Delete</button>
+          </div>
+        </div>
+        <div class="model-card">
+          <div class="model-icon">&#127908;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.whisperTurboCPU">Whisper Large V3 Turbo — int8 (CPU)</div>
+            <div class="model-desc" data-i18n="offline.model.whisperTurboCPU.desc">Best quality for CPU-only systems. Same model, quantized.</div>
+            <div class="model-size" data-i18n="offline.model.whisperTurboCPU.size">850 MB &middot; ~5x realtime on CPU</div>
+          </div>
+          <div class="model-actions">
+            <button class="btn btn-sm btn-primary" id="btn-download-small" data-i18n="offline.download">Download</button>
+          </div>
+        </div>
+        <div class="model-card">
+          <div class="model-icon">&#127908;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.whisperV3CPU">Whisper Large V3 — int8 (CPU)</div>
+            <div class="model-desc" data-i18n="offline.model.whisperV3CPU.desc">Maximum accuracy, slower. 1.55B params. For when quality matters most.</div>
+            <div class="model-size" data-i18n="offline.model.whisperV3CPU.size">1.6 GB &middot; ~2x realtime on CPU</div>
+          </div>
+          <div class="model-actions">
+            <button class="btn btn-sm btn-primary" id="btn-download-large" data-i18n="offline.download">Download</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="offline.llmModels">LLM Normalization Models</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="offline.llmModels.hint">Text normalization models (llama.cpp / GGUF)</div>
+        <div class="model-card">
+          <div class="model-icon">&#129302;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.qwen15GPU">Qwen2.5-1.5B — fp16 (GPU)</div>
+            <div class="model-desc" data-i18n="offline.model.qwen15GPU.desc">Best offline normalization quality. Fast on GPU.</div>
+            <div class="model-size" data-i18n="offline.model.qwen15GPU.size">3.0 GB &middot; Requires 4 GB VRAM</div>
+          </div>
+          <div class="model-actions">
+            <span class="badge badge-success" data-i18n="offline.downloaded">Downloaded</span>
+          </div>
+        </div>
+        <div class="model-card">
+          <div class="model-icon">&#129302;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.qwen15CPU">Qwen2.5-1.5B — Q4 (CPU)</div>
+            <div class="model-desc" data-i18n="offline.model.qwen15CPU.desc">Good quality on CPU. 4-bit quantization.</div>
+            <div class="model-size" data-i18n="offline.model.qwen15CPU.size">900 MB &middot; ~2 GB RAM</div>
+          </div>
+          <div class="model-actions">
+            <button class="btn btn-sm btn-primary" id="btn-download-qwen-q4" data-i18n="offline.download">Download</button>
+          </div>
+        </div>
+        <div class="model-card">
+          <div class="model-icon">&#129302;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.qwen05CPU">Qwen2.5-0.5B — Q4 (CPU)</div>
+            <div class="model-desc" data-i18n="offline.model.qwen05CPU.desc">Lightweight. For older or low-RAM systems.</div>
+            <div class="model-size" data-i18n="offline.model.qwen05CPU.size">400 MB &middot; ~1 GB RAM</div>
+          </div>
+          <div class="model-actions">
+            <button class="btn btn-sm btn-primary" id="btn-download-qwen-sm" data-i18n="offline.download">Download</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="offline.speakerEncoder">Speaker Encoder Model</div>
+        <div class="model-card" style="margin-bottom:0">
+          <div class="model-icon">&#128101;</div>
+          <div class="model-info">
+            <div class="model-name" data-i18n="offline.model.onnxEncoder">ONNX Speaker Encoder</div>
+            <div class="model-desc" data-i18n="offline.model.onnxEncoder.desc">Voice verification model for Speaker Lock feature.</div>
+            <div class="model-size" data-i18n="offline.model.onnxEncoder.size">18 MB &middot; SHA-256 verified</div>
+          </div>
+          <div class="model-actions"><span class="badge badge-success" data-i18n="offline.downloaded">Downloaded</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="page.general">Settings</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="offline.verifyIntegrity">Verify model integrity on load</div>
+            <div class="form-hint" data-i18n="offline.verifyIntegrity.hint">SHA-256 checksum verification (adds ~1s startup)</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="toggle-verify-integrity" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="offline.downloadSource">Download source</div>
+            <div class="form-hint" data-i18n="offline.downloadSource.hint">Where to download models from</div>
+          </div>
+          <select id="download-source-select"><option selected data-i18n="offline.source.hf">HuggingFace Hub (HTTPS)</option><option data-i18n="offline.source.mirror">Custom mirror</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== NETWORK ==================== -->
+    <div class="content" id="page-network" data-page="network">
+      <div class="page-title" data-i18n="page.network">Network</div>
+      <div class="card">
+        <div class="card-title" data-i18n="network.connectionStatus">Connection Status</div>
+        <div class="form-row">
+          <div class="form-label"><span class="status-dot online"></span>Groq API (STT)</div>
+          <span style="color:var(--success);font-size:12px" data-i18n="network.connected">Connected &middot; 142ms</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label"><span class="status-dot online"></span>Groq API (LLM)</div>
+          <span style="color:var(--success);font-size:12px" data-i18n="network.connected2">Connected &middot; 89ms</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label"><span class="status-dot online"></span><span data-i18n="translate.chromeExtension">Chrome Extension</span></div>
+          <span style="color:var(--success);font-size:12px" data-i18n="network.connected3">Connected</span>
+        </div>
+        <div style="margin-top:8px;text-align:right">
+          <button class="btn btn-sm" id="btn-check-all" data-i18n="network.checkAll">Check all</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="network.timeouts">Timeouts</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="network.sttTimeout">STT request timeout</div>
+            <div class="form-hint" data-i18n="network.sttTimeout.hint">Max wait for speech-to-text API response</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="input-stt-timeout" value="10" min="3" max="60" style="min-width:60px">
+            <span class="form-hint" data-i18n="unit.sec">sec</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="network.llmTimeout">LLM request timeout</div>
+            <div class="form-hint" data-i18n="network.llmTimeout.hint">Max wait for LLM normalization response</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="input-llm-timeout" value="15" min="3" max="60" style="min-width:60px">
+            <span class="form-hint" data-i18n="unit.sec">sec</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="network.probeTimeout">Network probe timeout</div>
+            <div class="form-hint" data-i18n="network.probeTimeout.hint">How long to wait when checking connectivity at session start</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="number" id="input-probe-timeout" value="3" min="1" max="10" style="min-width:60px">
+            <span class="form-hint" data-i18n="unit.sec">sec</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="network.proxy">Proxy</div>
+        <div class="form-row">
+          <div class="form-label" data-i18n="network.useProxy">Use proxy</div>
+          <label class="toggle"><input type="checkbox" id="proxy-toggle"><span class="toggle-slider"></span></label>
+        </div>
+        <div id="proxy-fields" style="display:none">
+          <div class="form-row">
+            <div class="form-label" data-i18n="network.proxyUrl">Proxy URL</div>
+            <input type="url" id="input-proxy-url" placeholder="http://proxy:8080" style="min-width:200px">
+          </div>
+          <div class="form-row">
+            <div class="form-label" data-i18n="network.proxyAuth">Proxy authentication</div>
+            <label class="toggle"><input type="checkbox" id="toggle-proxy-auth"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="form-row">
+            <div class="form-label" data-i18n="network.username">Username</div>
+            <input type="text" id="input-proxy-user" placeholder="username" style="min-width:150px">
+          </div>
+          <div class="form-row">
+            <div class="form-label" data-i18n="network.password">Password</div>
+            <input type="password" id="input-proxy-pass" placeholder="password" style="min-width:150px">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="network.httpServer">HTTP Server (for Extension)</div>
+        <div class="form-row">
+          <div>
+            <div class="form-label" data-i18n="network.listenPort">Listen port</div>
+            <div class="form-hint" data-i18n="network.listenPort.hint">Backend HTTP server port (requires restart)</div>
+          </div>
+          <input type="number" id="input-listen-port" value="19780" min="1024" max="65535" style="min-width:80px">
+        </div>
+        <div class="form-row">
+          <div style="display:flex;gap:6px;align-items:center"><span style="color:var(--success)">&#128274;</span><span class="form-label" style="margin:0" data-i18n="network.boundLocalhost">Bound to 127.0.0.1 (localhost only)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== STATS ==================== -->
+    <div class="content" id="page-stats" data-page="stats">
+      <div class="page-title" data-i18n="page.stats">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-card highlight"><div class="stat-value" id="stat-total-words">12,847</div><div class="stat-label" data-i18n="stats.totalWords">Total Words</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-sessions">342</div><div class="stat-label" data-i18n="stats.sessions">Sessions</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--success)" id="stat-time-saved">2h 14m</div><div class="stat-label" data-i18n="stats.timeSaved">Time Saved</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:var(--warning)" id="stat-streak">7</div><div style="display:flex;align-items:center;justify-content:center;gap:4px"><span class="stat-label" data-i18n="stats.dayStreak">Day Streak</span><span>&#128293;</span></div></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title" data-i18n="history.today">Today</div>
+        <div class="form-row"><div class="form-label" data-i18n="stats.wordsDictated">Words dictated</div><span style="font-weight:600;color:var(--accent-highlight)" id="stat-today-words">487</span></div>
+        <div class="form-row"><div class="form-label" data-i18n="stats.sessions">Sessions</div><span style="font-weight:600" id="stat-today-sessions">23</span></div>
+        <div class="form-row"><div class="form-label" data-i18n="stats.avgAccuracy">Average accuracy</div><span style="font-weight:600;color:var(--success)" id="stat-today-accuracy">94.2%</span></div>
+        <div class="form-row"><div class="form-label" data-i18n="stats.speakerRejections">Speaker rejections</div><span style="font-weight:600;color:var(--error)" id="stat-today-rejections">2</span></div>
+        <div class="form-row"><div class="form-label" data-i18n="stats.avgSTTLatency">Avg STT latency</div><span style="font-weight:600" id="stat-avg-stt">1.8s</span></div>
+        <div class="form-row"><div class="form-label" data-i18n="stats.avgLLMLatency">Avg LLM latency</div><span style="font-weight:600" id="stat-avg-llm">0.9s</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="stats.apiTokenUsage">API Token Usage</div>
+        <div class="form-hint" style="margin-bottom:12px" data-i18n="stats.apiTokenUsage.hint">Token consumption by API key across all three categories this month.</div>
+        <table class="table" id="token-usage-table">
+          <thead><tr><th data-i18n="apiKey">API Key</th><th>STT</th><th>LLM</th><th data-i18n="page.translate">Translation</th><th data-i18n="stats.total">Total</th><th data-i18n="stats.remaining">Remaining</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:6px"><span class="badge badge-success" style="width:8px;height:8px;padding:0;border-radius:50%"></span> <span style="font-weight:500">Groq</span></div></td>
+              <td>48,200</td>
+              <td>125,600</td>
+              <td>31,400</td>
+              <td style="font-weight:600;color:var(--accent-highlight)">205,200</td>
+              <td style="color:var(--success)" data-i18n="stats.unlimited">Unlimited</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:6px"><span class="badge badge-warning" style="width:8px;height:8px;padding:0;border-radius:50%"></span> <span style="font-weight:500">OpenAI</span></div></td>
+              <td>12,100</td>
+              <td>—</td>
+              <td>8,900</td>
+              <td style="font-weight:600;color:var(--accent-highlight)">21,000</td>
+              <td style="color:var(--warning)">$4.12</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:6px"><span class="badge badge-warning" style="width:8px;height:8px;padding:0;border-radius:50%"></span> <span style="font-weight:500">Anthropic</span></div></td>
+              <td>—</td>
+              <td>3,200</td>
+              <td>—</td>
+              <td style="font-weight:600;color:var(--accent-highlight)">3,200</td>
+              <td style="color:var(--success)">$9.87</td>
+            </tr>
+            <tr>
+              <td><div style="display:flex;align-items:center;gap:6px"><span class="badge badge-warning" style="width:8px;height:8px;padding:0;border-radius:50%"></span> <span style="font-weight:500">Deepgram</span></div></td>
+              <td>5,400</td>
+              <td>—</td>
+              <td>—</td>
+              <td style="font-weight:600;color:var(--accent-highlight)">5,400</td>
+              <td style="color:var(--error)">$0.43</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="display:flex;justify-content:space-between;margin-top:8px">
+          <span class="form-hint" data-i18n="stats.period">Period: March 2026</span>
+          <span class="form-hint" style="font-weight:600" data-i18n="stats.totalTokens">Total: 234,800 tokens</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="stats.topApps">Top Applications</div>
+        <div class="form-row"><div class="form-label">&#128172; Slack</div><span style="font-weight:600">4,231 words (33%)</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+        <div class="form-row" style="margin-top:8px"><div class="form-label">&#128187; VS Code</div><span style="font-weight:600">2,891 words (22%)</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:22%"></div></div>
+        <div class="form-row" style="margin-top:8px"><div class="form-label">&#128231; Outlook</div><span style="font-weight:600">2,104 words (16%)</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:16%"></div></div>
+        <div class="form-row" style="margin-top:8px"><div class="form-label">&#127760; Chrome</div><span style="font-weight:600">1,847 words (14%)</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:14%"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="stats.replacementsUsed">Replacements Used</div>
+        <div class="form-row"><div class="form-label">"my email"</div><span style="font-weight:600">47 times</span></div>
+        <div class="form-row"><div class="form-label">"signature"</div><span style="font-weight:600">23 times</span></div>
+        <div class="form-row"><div class="form-label">"meeting link"</div><span style="font-weight:600">12 times</span></div>
+      </div>
+    </div>
+
+    <!-- ==================== ACCOUNT ==================== -->
+    <div class="content" id="page-account" data-page="account">
+      <div class="page-title" data-i18n="page.account">Account</div>
+      <div class="card">
+        <div class="card-title" data-i18n="account.application">Application</div>
+        <div class="version-info">
+          <div class="version-icon">&#127911;</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px">AI Polyglot Kit</div>
+            <div class="form-hint" id="version-text">Version 6.0.0-beta.1 &middot; Built 2026-03-26</div>
+          </div>
+          <button class="btn btn-sm btn-primary" id="btn-check-update" data-i18n="account.checkUpdates">Check for updates</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" data-i18n="account.dataManagement">Data Management</div>
+        <div class="form-row">
+          <div><div class="form-label" data-i18n="account.exportSettings">Export all settings</div><div class="form-hint" data-i18n="account.exportSettings.hint">Save config to YAML file (excluding API keys)</div></div>
+          <button class="btn btn-sm" id="btn-export-yaml" data-i18n="account.exportYAML">Export YAML</button>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label" data-i18n="account.importSettings">Import settings</div><div class="form-hint" data-i18n="account.importSettings.hint">Load config from YAML file</div></div>
+          <button class="btn btn-sm" id="btn-import-config" data-i18n="account.importYAML">Import YAML</button>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label" data-i18n="account.exportHistory">Export history</div><div class="form-hint" data-i18n="account.exportHistory.hint">Export dictation history as CSV or JSON</div></div>
+          <div style="display:flex;gap:4px"><button class="btn btn-sm" id="btn-export-csv">CSV</button><button class="btn btn-sm" id="btn-export-json">JSON</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:var(--error)" data-i18n="account.dangerZone">Danger Zone</div>
+        <div class="form-row">
+          <div><div class="form-label" data-i18n="account.clearHistory">Clear all history</div><div class="form-hint" data-i18n="account.clearHistory.hint">Permanently delete all dictation records</div></div>
+          <button class="btn btn-sm btn-danger" id="btn-clear-history" data-i18n="account.clearHistoryBtn">Clear History</button>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label" data-i18n="account.resetDefaults">Reset to defaults</div><div class="form-hint" data-i18n="account.resetDefaults.hint">Reset all settings to factory defaults</div></div>
+          <button class="btn btn-sm btn-danger" id="btn-reset-all" data-i18n="account.resetAll">Reset All</button>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label" data-i18n="account.viewAuditLog">View audit log</div><div class="form-hint">%APPDATA%/AIPolyglotKit/audit.log</div></div>
+          <button class="btn btn-sm" id="btn-audit-log" data-i18n="account.viewLog">View Log</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <span style="margin-right:auto;display:flex;align-items:center;gap:8px"><span class="form-hint" id="footer-version">v6.0.0-beta.1</span><a href="#" class="form-hint" style="color:var(--accent-highlight);text-decoration:none;font-size:11px;background:rgba(133,96,10,0.15);padding:2px 8px;border-radius:10px" id="footer-update-badge" data-open="modal-update">&#8593; <span class="btn-text" data-i18n="footer.updateAvailable">v6.1.0 available</span></a></span>
+    <button class="btn" id="btn-cancel" data-i18n="btn.cancel">Cancel</button>
+    <button class="btn btn-primary" id="btn-save" data-i18n="btn.save">Save</button>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- ==================== MODALS ========================================= -->
+  <!-- ===================================================================== -->
+
+  <!-- HOTKEY CAPTURE -->
+  <div class="modal-overlay" id="modal-hotkey">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title"><span data-i18n="modal.setHotkey">Set Hotkey:</span> <span id="hotkey-action-name">Record</span></div>
+        <button class="modal-close" data-close="modal-hotkey">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="hotkey-capture">
+          <div class="hotkey-capture-hint" data-i18n="modal.hotkey.pressKey">Press any key combination...</div>
+          <div class="hotkey-capture-display" id="hotkey-display">&mdash;</div>
+          <div class="hotkey-capture-hint"><span data-i18n="modal.hotkey.escHint">Press <strong>Escape</strong> to cancel, <strong>Backspace</strong> to clear</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-hotkey" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-apply-hotkey" data-i18n="btn.apply">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD APPLICATION -->
+  <div class="modal-overlay" id="modal-add-app">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.addApp">Add Application</div>
+        <button class="modal-close" data-close="modal-add-app">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:16px">
+          <div class="form-label" style="margin-bottom:6px" data-i18n="modal.addApp.processName">Process name</div>
+          <div class="form-hint" style="margin-bottom:8px" data-i18n="modal.addApp.processName.hint">Enter the executable name or pick from running processes</div>
+          <input type="text" placeholder="application.exe" style="width:100%" id="add-app-name">
+        </div>
+        <div class="card" style="margin-bottom:0;max-height:200px;overflow-y:auto;padding:8px">
+          <div class="form-hint" style="margin-bottom:8px" data-i18n="modal.addApp.runningProcesses">Running processes:</div>
+          <div class="app-row" data-proc="chrome.exe"><span class="app-icon-sm">&#127760;</span><span class="app-name">chrome.exe</span><span class="badge badge-accent">12 windows</span></div>
+          <div class="app-row" data-proc="code.exe"><span class="app-icon-sm">&#128187;</span><span class="app-name">code.exe</span><span class="badge badge-accent">3 windows</span></div>
+          <div class="app-row" data-proc="slack.exe"><span class="app-icon-sm">&#128172;</span><span class="app-name">slack.exe</span><span class="badge badge-accent">1 window</span></div>
+          <div class="app-row" data-proc="Telegram.exe"><span class="app-icon-sm">&#9992;</span><span class="app-name">Telegram.exe</span><span class="badge badge-accent">1 window</span></div>
+          <div class="app-row" data-proc="Discord.exe"><span class="app-icon-sm">&#127918;</span><span class="app-name">Discord.exe</span><span class="badge badge-accent">1 window</span></div>
+          <div class="app-row" data-proc="notepad.exe"><span class="app-icon-sm">&#128196;</span><span class="app-name">notepad.exe</span><span class="badge badge-accent">2 windows</span></div>
+          <div class="app-row" data-proc="explorer.exe"><span class="app-icon-sm">&#128193;</span><span class="app-name">explorer.exe</span><span class="badge badge-accent">5 windows</span></div>
+        </div>
+        <div style="margin-top:16px">
+          <div class="form-label" style="margin-bottom:6px" data-i18n="modal.addApp.dictationStyle">Dictation style</div>
+          <select style="width:100%"><option data-i18n="style.casual">Casual</option><option selected data-i18n="style.neutral">Neutral</option><option data-i18n="style.formal">Formal</option><option data-i18n="style.technical">Technical</option><option data-i18n="style.email">Email</option></select>
+        </div>
+        <div style="margin-top:12px">
+          <div class="form-label" style="margin-bottom:6px" data-i18n="modal.addApp.injectionMethod">Injection method</div>
+          <select style="width:100%"><option selected data-i18n="injection.sendInput">Keyboard simulation</option><option data-i18n="injection.clipboard">Clipboard paste</option><option data-i18n="injection.uiAutomation">UI Automation</option></select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-add-app" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-add-app" data-i18n="dictionary.add">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD/EDIT REPLACEMENT -->
+  <div class="modal-overlay" id="modal-add-replacement">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="replacement-modal-title" data-i18n="modal.addReplacement">Add Replacement</div>
+        <button class="modal-close" data-close="modal-add-replacement">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:16px">
+          <div class="form-label" style="margin-bottom:6px" data-i18n="modal.repl.trigger">Trigger phrase</div>
+          <div class="form-hint" style="margin-bottom:8px" data-i18n="modal.repl.trigger.hint">What you say to activate this replacement</div>
+          <input type="text" id="repl-trigger" placeholder='e.g., "my email"' style="width:100%">
+        </div>
+        <div style="margin-bottom:16px">
+          <div class="form-label" style="margin-bottom:6px" data-i18n="modal.repl.text">Replacement text</div>
+          <div class="form-hint" style="margin-bottom:8px" data-i18n="modal.repl.text.hint">What gets inserted instead (supports multi-line)</div>
+          <textarea id="repl-text" rows="4" placeholder="e.g., john@example.com"></textarea>
+        </div>
+        <div style="margin-bottom:16px">
+          <div class="form-label" style="margin-bottom:6px" data-i18n="modal.repl.matchMode">Match mode</div>
+          <div style="display:flex;gap:12px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="radio" name="match-mode" value="fuzzy" checked style="accent-color:var(--accent-highlight)"> <span data-i18n="modal.repl.fuzzy">Fuzzy (tolerates STT errors)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="radio" name="match-mode" value="strict" style="accent-color:var(--accent-highlight)"> <span data-i18n="modal.repl.strict">Strict (exact match only)</span>
+            </label>
+          </div>
+          <div class="form-hint" style="margin-top:4px" data-i18n="modal.repl.tolerance">Fuzzy tolerance: 0 for &lt;5 chars, 1 for 5-10 chars, 2 for 11+ chars (Levenshtein)</div>
+        </div>
+        <div>
+          <div class="form-row" style="padding:0">
+            <div><div class="form-label" data-i18n="modal.repl.sensitive">Sensitive data</div><div class="form-hint" data-i18n="modal.repl.sensitive.hint">Encrypt replacement text with DPAPI</div></div>
+            <label class="toggle"><input type="checkbox" id="repl-sensitive"><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-add-replacement" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-add-replacement" data-i18n="btn.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICE ENROLLMENT -->
+  <div class="modal-overlay" id="modal-enrollment">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.enrollment">Voice Enrollment</div>
+        <button class="modal-close" data-close="modal-enrollment">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="enrollment-step" id="enroll-step-1">
+          <div class="enrollment-progress">
+            <div class="enrollment-dot current"></div><div class="enrollment-dot"></div><div class="enrollment-dot"></div>
+          </div>
+          <div class="voice-circle" style="width:100px;height:100px;font-size:40px;margin-bottom:16px">&#127908;</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:8px" data-i18n="modal.enrollment.recordVoice">Record Your Voice</div>
+          <div class="form-hint" style="margin-bottom:16px" data-i18n="modal.enrollment.recordHint">Read the following text aloud in a quiet environment. We need about 5 seconds of your natural speaking voice.</div>
+          <div style="background:var(--bg-input);border-radius:var(--radius-card);padding:16px;margin-bottom:16px;font-style:italic;color:var(--fg-secondary);line-height:1.8">
+            "The quick brown fox jumps over the lazy dog. My voice is my passport, verify me."
+          </div>
+          <button class="btn btn-primary" id="btn-start-enroll" style="min-width:160px"><span>&#9654;</span> <span class="btn-text" data-i18n="modal.enrollment.start">Start Recording</span></button>
+        </div>
+        <div class="enrollment-step" id="enroll-step-2" style="display:none">
+          <div class="enrollment-progress">
+            <div class="enrollment-dot done"></div><div class="enrollment-dot current"></div><div class="enrollment-dot"></div>
+          </div>
+          <div class="voice-circle recording" style="width:100px;height:100px;font-size:40px;margin-bottom:16px">&#127908;</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:var(--error)" data-i18n="modal.enrollment.recording">Recording...</div>
+          <div id="enroll-timer" style="font-size:28px;font-weight:700;color:var(--accent-highlight);margin:12px 0">0:00</div>
+          <div class="rms-bar" style="max-width:300px;margin:8px auto"><div class="rms-fill" id="enroll-rms" style="width:45%"></div></div>
+          <div class="form-hint" style="margin-top:12px">Keep speaking naturally... (minimum 4 seconds)</div>
+          <button class="btn btn-danger" id="btn-stop-enroll" style="margin-top:16px;min-width:160px">&#9724; <span data-i18n="modal.enrollment.stop">Stop Recording</span></button>
+        </div>
+        <div class="enrollment-step" id="enroll-step-3" style="display:none">
+          <div class="enrollment-progress">
+            <div class="enrollment-dot done"></div><div class="enrollment-dot done"></div><div class="enrollment-dot current"></div>
+          </div>
+          <div class="voice-circle enrolled" style="width:100px;height:100px;font-size:40px;margin-bottom:16px">&#10003;</div>
+          <div style="font-size:15px;font-weight:600;margin-bottom:8px;color:var(--success)" data-i18n="modal.enrollment.created">Voice Profile Created!</div>
+          <div class="form-hint" style="margin-bottom:4px">Duration: 5.2 seconds</div>
+          <div class="form-hint" style="margin-bottom:4px">Quality: Excellent</div>
+          <div class="form-hint" style="margin-bottom:16px">Encrypted with DPAPI and stored locally</div>
+          <button class="btn btn-primary" data-close="modal-enrollment" style="min-width:160px" data-i18n="btn.done">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL DOWNLOAD -->
+  <div class="modal-overlay" id="modal-download-model">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.downloadModel">Download Model</div>
+        <button class="modal-close" data-close="modal-download-model">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:14px;font-weight:600" id="download-model-name">faster-whisper-small</div>
+          <div class="form-hint" data-i18n="modal.download.size">460 MB from HuggingFace Hub (HTTPS)</div>
+        </div>
+        <div class="progress-bar" style="height:8px;margin-bottom:8px">
+          <div class="progress-fill" id="download-progress" style="width:0%;transition:width 0.5s"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--fg-secondary)">
+          <span id="download-status" data-i18n="modal.download.ready">Ready to download</span>
+          <span id="download-pct">0%</span>
+        </div>
+        <div class="form-hint" style="margin-top:12px;display:flex;gap:4px"><span>&#128274;</span><span class="form-hint" style="font-size:inherit;margin:0" data-i18n="modal.download.sha256">SHA-256 integrity check will run after download</span></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-download-model" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-start-download" data-i18n="offline.download">Download</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT REPLACEMENTS -->
+  <div class="modal-overlay" id="modal-import-replacements">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.importReplacements">Import Replacements</div>
+        <button class="modal-close" data-close="modal-import-replacements">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="import-drop" id="import-drop-repl">
+          <div class="import-drop-icon">&#128193;</div>
+          <div data-i18n="modal.import.dropYAML">Drop YAML file here or click to browse</div>
+          <div class="form-hint" style="margin-top:4px" data-i18n="modal.import.yamlFormats">Supports .yaml and .yml files</div>
+        </div>
+        <div class="form-hint" style="margin-top:12px" data-i18n="modal.import.expectedFormat">Expected format:</div>
+        <div style="background:var(--bg-input);border-radius:var(--radius-input);padding:10px;margin-top:4px;font-family:monospace;font-size:11px;color:var(--fg-secondary)">
+          replacements:<br>
+          &nbsp;&nbsp;- trigger: "my email"<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;text: "john@example.com"<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;match: fuzzy<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;sensitive: true
+        </div>
+        <div style="margin-top:12px">
+          <div class="form-row" style="padding:0">
+            <div class="form-label" data-i18n="modal.import.merge">Merge with existing</div>
+            <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="form-hint" data-i18n="modal.import.merge.hint">If off, existing replacements will be replaced entirely</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-import-replacements" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-import-replacements" data-i18n="dictionary.import">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT DICTIONARY -->
+  <div class="modal-overlay" id="modal-import-dict">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.importDict">Import Dictionary</div>
+        <button class="modal-close" data-close="modal-import-dict">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="import-drop" id="import-drop-dict">
+          <div class="import-drop-icon">&#128193;</div>
+          <div data-i18n="modal.import.dropFile">Drop file here or click to browse</div>
+          <div class="form-hint" style="margin-top:4px" data-i18n="modal.import.txtJson">.txt (one word per line) or .json</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-import-dict" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-import-dict" data-i18n="dictionary.import">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMPORT CONFIG -->
+  <div class="modal-overlay" id="modal-import-config">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.importSettings">Import Settings</div>
+        <button class="modal-close" data-close="modal-import-config">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="banner banner-warning" style="display:flex;gap:4px"><span>&#9888;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="modal.import.configWarning">This will overwrite your current settings (API keys are NOT imported)</span></div>
+        <div class="import-drop" id="import-drop-config">
+          <div class="import-drop-icon">&#128193;</div>
+          <div data-i18n="modal.import.dropConfig">Drop YAML config file here</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-import-config" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-import-config" data-i18n="modal.import.importApply">Import &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HELP: RECOMMENDED PROVIDERS -->
+  <div class="modal-overlay" id="modal-help-providers">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.recommendedServices">Recommended Services</div>
+        <button class="modal-close" data-close="modal-help-providers">&times;</button>
+      </div>
+      <div class="modal-body" style="font-size:12px;line-height:1.7">
+        <div style="margin-bottom:12px">
+          <div class="form-label" style="margin-bottom:4px" data-i18n="modal.help.stt">STT (Speech-to-Text)</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:85px">AssemblyAI</span><span class="form-hint" style="margin:0" data-i18n="modal.help.assemblyai">100h free, Universal-2, best accuracy</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:85px">Deepgram</span><span class="form-hint" style="margin:0" data-i18n="modal.help.deepgram">$200 free credit, Nova-2, low latency streaming</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:85px">OpenAI</span><span class="form-hint" style="margin:0" data-i18n="modal.help.openaiSTT">$5 free, Whisper, best multilingual</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:85px">Groq</span><span class="form-hint" style="margin:0" data-i18n="modal.help.groqSTT">free (rate limited), Whisper V3 Turbo, fastest</span></div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div class="form-label" style="margin-bottom:4px" data-i18n="modal.help.llm">LLM (Normalization)</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:75px">Groq</span><span class="form-hint" style="margin:0" data-i18n="modal.help.groqLLM">free tier, Llama 3.3 70B, fastest inference</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:75px">OpenAI</span><span class="form-hint" style="margin:0" data-i18n="modal.help.openaiLLM">GPT-4o-mini, best grammar correction</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:75px">Anthropic</span><span class="form-hint" style="margin:0" data-i18n="modal.help.anthropicLLM">Claude Haiku, best instruction following</span></div>
+          </div>
+        </div>
+        <div style="margin-bottom:12px">
+          <div class="form-label" style="margin-bottom:4px" data-i18n="modal.help.translation">Translation</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:75px">Groq</span><span class="form-hint" style="margin:0" data-i18n="modal.help.groqTranslate">free tier, good for most languages</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:75px">DeepL</span><span class="form-hint" style="margin:0" data-i18n="modal.help.deepl">500K chars/month free, best European language quality</span></div>
+            <div style="display:flex;gap:4px"><span style="font-weight:600;min-width:75px">OpenAI</span><span class="form-hint" style="margin:0" data-i18n="modal.help.openaiTranslate">GPT-4o-mini, handles rare language pairs</span></div>
+          </div>
+        </div>
+        <div class="banner banner-info" style="display:flex;gap:4px;font-size:12px"><span>&#128161;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="modal.help.startTip">Start with Groq — it's free and fast. Add a paid provider as fallback for reliability.</span></div>
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn btn-sm" style="color:var(--accent-highlight)" id="btn-open-guide" data-i18n="modal.help.openGuide">Open step-by-step guide</a>
+        <button class="btn" data-close="modal-help-providers" data-i18n="btn.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD APP RULE -->
+  <div class="modal-overlay" id="modal-add-app-instruction">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.addAppRule">Add App Rule</div>
+        <button class="modal-close" data-close="modal-add-app-instruction">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-label" style="margin-bottom:6px" data-i18n="dictation.col.app">Application</div>
+        <select style="width:100%;margin-bottom:16px" id="add-app-rule-select"><option data-i18n="modal.selectApp">Select application...</option><option>outlook.exe</option><option>WINWORD.EXE</option><option>WindowsTerminal.exe</option><option>Telegram.exe</option><option>Discord.exe</option><option>notepad.exe</option></select>
+        <div class="form-label" style="margin-bottom:6px" data-i18n="modal.script">Script</div>
+        <select style="width:100%" id="add-app-rule-script"><option>Messenger</option><option>Email</option><option selected>Code Editor</option><option>Document</option><option>My Slack Rules</option></select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-add-app-instruction" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-add-app-instruction" data-i18n="dictionary.add">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECK FOR UPDATE -->
+  <div class="modal-overlay" id="modal-check-update">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.checkUpdates">Check for Updates</div>
+        <button class="modal-close" data-close="modal-check-update">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:24px">
+        <div style="font-size:48px;margin-bottom:12px">&#10003;</div>
+        <div style="font-size:14px;font-weight:600;color:var(--success)" data-i18n="modal.update.upToDate">You're up to date!</div>
+        <div class="form-hint" style="margin-top:8px">AI Polyglot Kit v6.0.0-beta.1</div>
+        <div class="form-hint">Last checked: just now</div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" data-close="modal-check-update" data-i18n="btn.ok">OK</button></div>
+    </div>
+  </div>
+
+  <!-- AUDIT LOG -->
+  <div class="modal-overlay" id="modal-audit-log">
+    <div class="modal" style="max-width:640px">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.auditLog">Audit Log</div>
+        <button class="modal-close" data-close="modal-audit-log">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height:400px;overflow-y:auto">
+        <div style="font-family:monospace;font-size:11px;line-height:1.8;color:var(--fg-secondary)" id="audit-log-content">
+          <div>[2026-03-27 14:32:01] CONFIG_CHANGE: hotkey changed from 'f13' to 'f12'</div>
+          <div>[2026-03-27 14:30:15] SPEAKER_LOCK: enabled</div>
+          <div>[2026-03-27 14:29:03] VOICE_PROFILE: enrolled (4.2s, SHA256:a3f2...)</div>
+          <div>[2026-03-27 13:15:22] REPLACEMENT_ADD: "phone" (sensitive=true)</div>
+          <div>[2026-03-27 12:00:00] MODE_SWITCH: online → offline (network probe failed)</div>
+          <div>[2026-03-26 18:45:10] INSTRUCTION_CHANGE: custom instructions updated (128 chars)</div>
+          <div>[2026-03-26 18:30:00] REPLACEMENT_ADD: "signature" (sensitive=false)</div>
+          <div>[2026-03-26 17:12:33] CONFIG_CHANGE: noise_suppression enabled</div>
+          <div>[2026-03-26 16:00:00] APP_START: v6.0.0-beta.1</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-sm" id="btn-open-in-explorer" data-i18n="modal.audit.openExplorer">Open in Explorer</button>
+        <button class="btn btn-primary" data-close="modal-audit-log" data-i18n="btn.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM: DELETE VOICE PROFILE -->
+  <div class="modal-overlay" id="modal-confirm-delete-profile">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.deleteVoiceProfile">Delete Voice Profile</div>
+        <button class="modal-close" data-close="modal-confirm-delete-profile">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">&#128721;</div>
+        <div class="form-hint" style="margin-bottom:8px;font-size:14px;color:var(--fg-primary)" data-i18n="modal.confirm.deleteProfile">Are you sure you want to permanently delete your voice profile?</div>
+        <div class="form-hint" data-i18n="modal.confirm.deleteProfile.hint">Speaker Lock will be disabled. You'll need to re-enroll to use it again.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-confirm-delete-profile" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-danger" data-close="modal-confirm-delete-profile" data-i18n="speaker.deleteProfile">Delete Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM: DELETE MODEL -->
+  <div class="modal-overlay" id="modal-confirm-delete-model">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.deleteModel">Delete Model</div>
+        <button class="modal-close" data-close="modal-confirm-delete-model">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">&#128465;</div>
+        <div style="margin-bottom:8px">Delete <strong id="delete-model-name">faster-whisper-medium</strong> (750 MB)?</div>
+        <div class="form-hint" data-i18n="modal.confirm.deleteModel.hint">You can re-download it later. Offline STT will be unavailable until another model is downloaded.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-confirm-delete-model" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-danger" data-close="modal-confirm-delete-model" data-i18n="offline.delete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM: CLEAR HISTORY -->
+  <div class="modal-overlay" id="modal-confirm-clear-history">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.clearHistory">Clear All History</div>
+        <button class="modal-close" data-close="modal-confirm-clear-history">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">&#128721;</div>
+        <div class="form-hint" style="margin-bottom:8px;font-size:14px;color:var(--fg-primary)" data-i18n="modal.confirm.clearHistory">Permanently delete all 342 dictation records?</div>
+        <div class="form-hint" data-i18n="modal.confirm.clearHistory.hint">This cannot be undone. Statistics will also be reset.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-confirm-clear-history" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-danger" data-close="modal-confirm-clear-history" data-i18n="modal.confirm.clearAll">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM: DELETE SELECTED HISTORY -->
+  <div class="modal-overlay" id="modal-confirm-delete-history">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.deleteSelected">Delete Selected</div>
+        <button class="modal-close" data-close="modal-confirm-delete-history">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="margin-bottom:8px">Delete <strong id="delete-count">0</strong> selected dictation records?</div>
+        <div class="form-hint" data-i18n="modal.confirm.cannotUndo">This cannot be undone.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-confirm-delete-history" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-danger" data-close="modal-confirm-delete-history" data-i18n="offline.delete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM: RESET ALL -->
+  <div class="modal-overlay" id="modal-confirm-reset">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.resetDefaults">Reset to Defaults</div>
+        <button class="modal-close" data-close="modal-confirm-reset">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">&#9888;</div>
+        <div class="form-hint" style="margin-bottom:8px;font-size:14px;color:var(--fg-primary)" data-i18n="modal.confirm.resetAll">Reset all settings to factory defaults?</div>
+        <div class="form-hint" data-i18n="modal.confirm.resetAll.hint">API keys will NOT be removed. History will NOT be deleted. Only settings/config will be reset.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-confirm-reset" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-danger" data-close="modal-confirm-reset" data-i18n="modal.confirm.resetAllBtn">Reset All Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTALL EXTENSION -->
+  <div class="modal-overlay" id="modal-install-extension">
+    <div class="modal" style="max-width:520px">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.installExtension">Install Extension</div>
+        <button class="modal-close" data-close="modal-install-extension">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- Browser info -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;background:var(--bg-input);border-radius:var(--radius-card)">
+          <span style="font-size:28px">&#128316;</span>
+          <div>
+            <div style="font-size:14px;font-weight:600">Microsoft Edge</div>
+            <div class="form-hint">v124.0 &middot; C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe</div>
+          </div>
+        </div>
+
+        <!-- Steps -->
+        <div style="display:flex;flex-direction:column;gap:0">
+          <!-- Step 1 -->
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-highlight);color:#000;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">1</div>
+            <div style="flex:1;padding-top:3px">
+              <div class="form-label" style="margin:0" data-i18n="modal.install.step1">Open extensions page</div>
+              <div class="form-hint" style="margin-bottom:6px" data-i18n="modal.install.step1.hint">Open edge://extensions in the browser</div>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm btn-primary" id="btn-open-browser" data-i18n="modal.install.openEdge">Open Edge</button>
+                <button class="btn btn-sm" id="btn-copy-url" data-i18n="modal.install.copyUrl">Copy URL</button>
+              </div>
+            </div>
+          </div>
+          <div style="margin-left:13px;width:2px;height:12px;background:var(--border)"></div>
+
+          <!-- Step 2 -->
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-highlight);color:#000;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">2</div>
+            <div style="flex:1;padding-top:3px">
+              <div class="form-label" style="margin:0" data-i18n="modal.install.step2">Enable Developer mode</div>
+              <div class="form-hint" data-i18n="modal.install.step2.hint">Turn on the "Developer mode" toggle in the top-right corner of the extensions page.</div>
+            </div>
+          </div>
+          <div style="margin-left:13px;width:2px;height:12px;background:var(--border)"></div>
+
+          <!-- Step 3 -->
+          <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-highlight);color:#000;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">3</div>
+            <div style="flex:1;padding-top:3px">
+              <div class="form-label" style="margin:0" data-i18n="modal.install.step3">Load unpacked extension</div>
+              <div class="form-hint" style="margin-bottom:6px" data-i18n="modal.install.step3.hint">Click "Load unpacked" and select the extension folder:</div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <input type="text" value="C:\Users\User\AppData\Roaming\AI Polyglot Kit\extension" style="flex:1;font-size:11px" readonly id="extension-path">
+                <button class="btn btn-sm" id="btn-copy-path" data-i18n="modal.install.copyPath">Copy Path</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hint -->
+        <div class="banner banner-info" style="margin-top:16px;display:flex;gap:4px"><span>&#128161;</span><span class="form-hint" style="color:inherit;margin:0;font-size:inherit" data-i18n="modal.install.hint">After loading, the extension connects to the app automatically via localhost.</span></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-install-extension" data-i18n="btn.close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTALL EXTENSION: SUCCESS -->
+  <div class="modal-overlay" id="modal-install-extension-done">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.installExtension">Install Extension</div>
+        <button class="modal-close" data-close="modal-install-extension-done">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:24px">
+        <div style="font-size:48px;margin-bottom:12px">&#10003;</div>
+        <div style="font-size:16px;font-weight:600;color:var(--success);margin-bottom:8px" data-i18n="modal.install.connected">Extension connected!</div>
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:12px;padding:12px;background:var(--bg-input);border-radius:var(--radius-card)">
+          <span style="font-size:20px">&#128316;</span>
+          <div style="text-align:left">
+            <div style="font-weight:500">Microsoft Edge</div>
+            <div class="form-hint">AI Polyglot Kit Extension v6.0.0</div>
+          </div>
+          <span class="badge badge-success" style="margin-left:auto" data-i18n="network.connected3">Connected</span>
+        </div>
+        <div class="form-hint" data-i18n="modal.install.available">Page translation and browser dictation are now available.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-close="modal-install-extension-done" data-i18n="btn.done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT SCRIPT -->
+  <div class="modal-overlay" id="modal-edit-script">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.editScript">Edit Script</div>
+        <button class="modal-close" data-close="modal-edit-script">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row" style="flex-direction:column;align-items:stretch;gap:8px">
+          <div>
+            <div class="form-label" data-i18n="modal.script.name">Script name</div>
+            <input type="text" id="script-name" value="My Slack Rules" style="width:100%">
+          </div>
+          <div>
+            <div class="form-label" data-i18n="modal.script.instructions">Instructions</div>
+            <div class="form-hint" style="margin-bottom:4px" data-i18n="modal.script.instructions.hint">These instructions are sent to the LLM as a system prompt for text normalization. One rule per line.</div>
+            <textarea id="script-text" rows="10" style="width:100%;font-family:'Cascadia Code','Fira Code','Consolas',monospace;font-size:12px;line-height:1.6">- all lowercase, never capitalize
+- no periods at the end of sentences
+- keep sentences short, max 10 words
+- use "ок" instead of "добре" or "зрозуміло"
+- never add emoji</textarea>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+              <span class="form-hint" data-i18n="modal.script.tip">Tip: be specific and use examples for best results</span>
+              <span class="form-hint" id="script-char-count">142 / 500</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-edit-script" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-edit-script" data-i18n="btn.save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM: REGENERATE SECRET -->
+  <div class="modal-overlay" id="modal-confirm-regen-secret">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <div class="modal-title" data-i18n="modal.regenSecret">Regenerate Shared Secret</div>
+        <button class="modal-close" data-close="modal-confirm-regen-secret">&times;</button>
+      </div>
+      <div class="modal-body" style="text-align:center">
+        <div style="font-size:40px;margin-bottom:12px">&#128275;</div>
+        <div style="margin-bottom:8px" data-i18n="modal.confirm.regenSecret">Generate a new shared secret for Chrome extension authentication?</div>
+        <div class="form-hint" data-i18n="modal.confirm.regenSecret.hint">The extension will need to be reconnected after this. Current sessions will be disconnected.</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-close="modal-confirm-regen-secret" data-i18n="btn.cancel">Cancel</button>
+        <button class="btn btn-primary" data-close="modal-confirm-regen-secret" data-i18n="translate.regenerate">Regenerate</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

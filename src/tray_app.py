@@ -4,8 +4,8 @@ import logging
 import os
 import threading
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import keyboard
 import pyperclip
@@ -32,8 +32,11 @@ STATE_COLORS = {
     DictationState.ERROR: "#FF4444",
 }
 
+
 def _state_tooltip(state: DictationState) -> str:
+    from .config import APP_VERSION
     from .i18n import t
+
     _keys = {
         DictationState.IDLE: "tray.ready",
         DictationState.RECORDING: "tray.recording",
@@ -41,7 +44,7 @@ def _state_tooltip(state: DictationState) -> str:
         DictationState.TYPING: "tray.typing",
         DictationState.ERROR: "tray.error",
     }
-    return f"{t('tray.title')} — {t(_keys.get(state, 'tray.ready'))}"
+    return f"{t('tray.title')} v{APP_VERSION} — {t(_keys.get(state, 'tray.ready'))}"
 
 
 def _create_mic_icon(color: str, size: int = 64) -> Image.Image:
@@ -141,6 +144,7 @@ class TrayApp:
                 self._start_device_watcher()
             except Exception as e:
                 logger.warning(f"Mic init failed: {e}")
+
         threading.Thread(target=_init_mic, daemon=True).start()
 
         # Start auto-updater
@@ -203,7 +207,7 @@ class TrayApp:
         if self._ptt_suppressed:
             return
 
-        raw_name = event.name if hasattr(event, 'name') else ""
+        raw_name = event.name if hasattr(event, "name") else ""
         key_name = normalize_key_name(raw_name) if raw_name else ""
         if not key_name:
             return
@@ -250,9 +254,7 @@ class TrayApp:
                     # Was a hold — stop recording
                     self._ptt_is_hold = False
                     logger.info("HOLD released — stopping recording")
-                    threading.Thread(
-                        target=self._engine.stop_if_recording, daemon=True
-                    ).start()
+                    threading.Thread(target=self._engine.stop_if_recording, daemon=True).start()
                 else:
                     # Was a tap (released before 0.3s — mic was never opened)
                     logger.info("TAP detected")
@@ -286,9 +288,11 @@ class TrayApp:
             ),
             Menu.SEPARATOR,
             MenuItem(
-                lambda text: (t("tray.update_install", version=self._pending_update['version'])
-                             if self._pending_update
-                             else t("tray.update_check")),
+                lambda text: (
+                    t("tray.update_install", version=self._pending_update["version"])
+                    if self._pending_update
+                    else t("tray.update_check")
+                ),
                 self._on_update_click,
             ),
             MenuItem(
@@ -334,6 +338,7 @@ class TrayApp:
 
     def _make_mic_selector(self, device_index: int | None) -> Callable:
         """Create a callback for mic selection."""
+
         def select(_icon=None, _item=None):
             self._config.audio.mic_device_index = device_index
             self._engine.get_audio_capture().select_device(device_index)
@@ -344,6 +349,7 @@ class TrayApp:
             # Refresh menu
             if self._icon:
                 self._icon.menu = self._create_menu()
+
         return select
 
     def _is_recording(self) -> bool:
@@ -368,7 +374,7 @@ class TrayApp:
 
             # Show pending notifications when recording ends
             if state == DictationState.IDLE:
-                pending = getattr(self, '_pending_notification', None)
+                pending = getattr(self, "_pending_notification", None)
                 if pending:
                     self._icon.notify(pending, t("tray.title"))
                     self._pending_notification = None
@@ -447,15 +453,27 @@ class TrayApp:
         self._engine.toggle()
 
     def _on_settings_click(self, _icon=None, _item=None) -> None:
-        """Open GUI settings window."""
-        from .settings_ui import SettingsWindow
+        """Open GUI settings window (PyWebView preferred, tkinter fallback)."""
         logger.info("Opening settings window")
-        settings = SettingsWindow(
-            self._config,
-            self._engine.get_audio_capture(),
-            on_save=self._on_settings_saved,
-        )
-        settings.show()
+        try:
+            from .ui.settings_window import show_settings
+
+            show_settings(
+                self._config,
+                self._engine._audio_capture,
+                self._on_settings_saved,
+            )
+        except ImportError:
+            # Fallback to tkinter settings if pywebview not available
+            logger.info("pywebview not available, falling back to tkinter settings")
+            from .settings_ui import SettingsWindow
+
+            settings = SettingsWindow(
+                self._config,
+                self._engine.get_audio_capture(),
+                on_save=self._on_settings_saved,
+            )
+            settings.show()
 
     def _on_settings_saved(self, restart: bool = False) -> None:
         """Re-register hotkeys and update mic after settings change."""
@@ -481,7 +499,9 @@ class TrayApp:
     def _on_log_click(self, _icon=None, _item=None) -> None:
         """Open log file in default editor."""
         import subprocess
+
         from .config import APP_DIR
+
         log_path = APP_DIR / "logs" / self._config.logging.file
         logger.info(f"Opening log: {log_path}")
         try:
@@ -495,7 +515,9 @@ class TrayApp:
     def _on_profile_click(self, _icon=None, _item=None) -> None:
         """Open user profile JSON in default editor."""
         import subprocess
+
         from .user_profile import PROFILE_PATH
+
         logger.info(f"Opening profile: {PROFILE_PATH}")
         try:
             if PROFILE_PATH.exists():
@@ -561,13 +583,16 @@ class TrayApp:
                 result = self._updater.check_now()
                 if not result and self._icon:
                     self._icon.notify("No updates available", "AI Polyglot Kit")
+
             threading.Thread(target=_check, daemon=True).start()
 
     def _on_restart_click(self, _icon=None, _item=None) -> None:
         """Restart the application (re-exec the process)."""
         import subprocess
         import sys
+
         from .main import release_single_instance
+
         logger.info("Restarting application...")
         self._engine.shutdown()
         keyboard.unhook_all()
@@ -580,10 +605,11 @@ class TrayApp:
 
     def _on_about_click(self, _icon=None, _item=None) -> None:
         """Show About dialog as Toplevel on shared Tk host."""
+        import tkinter as tk
+
+        from . import tk_host
         from .config import APP_VERSION
         from .utils import set_dwm_dark_title_bar
-        from . import tk_host
-        import tkinter as tk
 
         def _show():
             win = tk.Toplevel(tk_host.get_root())
@@ -605,17 +631,33 @@ class TrayApp:
             frame.pack(fill="both", expand=True)
 
             tk.Label(
-                frame, text=f"AI Polyglot Kit v{APP_VERSION}",
-                font=("Segoe UI", 12, "bold"), bg=bg, fg=fg,
+                frame,
+                text=f"AI Polyglot Kit v{APP_VERSION}",
+                font=("Segoe UI", 12, "bold"),
+                bg=bg,
+                fg=fg,
             ).pack(pady=(0, 12))
             tk.Label(
-                frame, text="Author: Dmytro Dubinko\nLicense: GPL-3.0\n\ngithub.com/dmdukr/ai-polyglot-kit",
-                font=("Segoe UI", 10), justify="center", bg=bg, fg=fg,
+                frame,
+                text="Author: Dmytro Dubinko\nLicense: GPL-3.0\n\ngithub.com/dmdukr/ai-polyglot-kit",
+                font=("Segoe UI", 10),
+                justify="center",
+                bg=bg,
+                fg=fg,
             ).pack()
             tk.Button(
-                win, text="OK", command=win.destroy,
-                bg=accent, fg="#ffffff", activebackground="#106ebe", activeforeground="#ffffff",
-                font=("Segoe UI", 9), relief="flat", padx=16, pady=4, cursor="hand2",
+                win,
+                text="OK",
+                command=win.destroy,
+                bg=accent,
+                fg="#ffffff",
+                activebackground="#106ebe",
+                activeforeground="#ffffff",
+                font=("Segoe UI", 9),
+                relief="flat",
+                padx=16,
+                pady=4,
+                cursor="hand2",
             ).pack(pady=12)
 
             win.update_idletasks()
@@ -630,9 +672,10 @@ class TrayApp:
         """Quit the application — full process exit."""
         logger.info("Quitting application")
         from . import tk_host
+
         tk_host.stop()
         self._updater.stop()
-        if hasattr(self, '_translate_server'):
+        if hasattr(self, "_translate_server"):
             self._translate_server.stop()
         self._engine._telemetry.app_stop()
         self._engine.shutdown()
