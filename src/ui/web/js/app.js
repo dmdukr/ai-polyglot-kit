@@ -274,21 +274,21 @@
    * Falls back to the embedded UK dictionary if bridge is unavailable.
    * @param {string} lang
    */
+  /** All i18n data loaded from i18n.json */
+  var i18nData = null;
+
   async function loadTranslations(lang) {
-    if (api) {
+    // Load i18n.json once
+    if (!i18nData) {
       try {
-        var result = await api.get_translations(lang);
-        if (result && typeof result === 'object') {
-          translations = result;
-          return;
-        }
+        var resp = await fetch('i18n.json');
+        i18nData = await resp.json();
       } catch (e) {
-        console.warn('[i18n] Bridge get_translations failed, using built-in fallback:', e);
+        console.warn('[i18n] Failed to load i18n.json:', e);
+        i18nData = {};
       }
     }
-    // No translations loaded from bridge — the walkAndTranslate function
-    // will use data-i18n-uk attributes or origTexts map as fallback
-    translations = {};
+    translations = (i18nData && i18nData[lang]) || {};
   }
 
   /**
