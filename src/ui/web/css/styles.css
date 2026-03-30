@@ -203,6 +203,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 6px 0;
+  gap: 12px;
+  min-height: 32px;
 }
 .form-row + .form-row { border-top: 1px solid rgba(51,51,72,0.5); }
 .form-label { font-size: 13px; color: var(--fg-primary); }
@@ -217,6 +219,8 @@ select, input[type="text"], input[type="number"], input[type="password"], input[
   font-size: 12px;
   font-family: inherit;
   outline: none;
+  min-width: 120px;
+  max-width: 200px;
 }
 select:focus, input:focus { border-color: var(--accent); }
 textarea {
