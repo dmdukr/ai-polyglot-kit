@@ -91,24 +91,8 @@ body {
   position: relative;
 }
 
-/* Title bar */
-.titlebar {
-  height: 36px;
-  background: var(--bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-  -webkit-app-region: drag;
-}
-.titlebar-text { font-size: 12px; font-weight: 600; color: var(--fg-secondary); }
-.titlebar-controls { display: flex; gap: 8px; }
-.titlebar-btn { width: 12px; height: 12px; border-radius: 50%; border: none; cursor: pointer; }
-.btn-minimize { background: var(--warning); }
-.btn-maximize { background: var(--success); }
-.btn-close { background: var(--error); }
+/* Title bar — hidden, using native window frame instead */
+.titlebar { display: none; }
 
 /* Main layout */
 .main { display: flex; flex: 1; overflow: hidden; }

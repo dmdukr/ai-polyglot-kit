@@ -92,7 +92,6 @@ def _open_webview_window(config: AppConfig) -> None:
         min_size=(700, 500),
         background_color="#1e1e2e",
         on_top=True,
-        frameless=True,
     )
     bridge.set_window(window)
 
