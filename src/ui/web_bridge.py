@@ -101,6 +101,25 @@ class WebBridge:
         self._window = window
 
     # ------------------------------------------------------------------
+    # Window management (frameless titlebar buttons)
+    # ------------------------------------------------------------------
+
+    def window_minimize(self) -> None:
+        """Minimize the settings window."""
+        if self._window:
+            self._window.minimize()
+
+    def window_maximize(self) -> None:
+        """Toggle maximize/restore the settings window."""
+        if self._window:
+            self._window.toggle_fullscreen()
+
+    def window_close(self) -> None:
+        """Close the settings window."""
+        if self._window:
+            self._window.destroy()
+
+    # ------------------------------------------------------------------
     # Config
     # ------------------------------------------------------------------
 

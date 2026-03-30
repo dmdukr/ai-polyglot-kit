@@ -45,6 +45,7 @@
       api = window.pywebview.api;
     }
 
+    setupTitlebar();
     setupNavigation();
     setupTheme();
     setupI18n();
@@ -95,6 +96,32 @@
     }, 2000);
   }
 
+
+  // ============================================================
+  // 1b. TITLEBAR (frameless window controls)
+  // ============================================================
+
+  function setupTitlebar() {
+    var btnMin = document.getElementById('btn-minimize');
+    var btnMax = document.getElementById('btn-maximize');
+    var btnClose = document.getElementById('btn-close');
+
+    if (btnMin) {
+      btnMin.addEventListener('click', function () {
+        if (api) api.window_minimize();
+      });
+    }
+    if (btnMax) {
+      btnMax.addEventListener('click', function () {
+        if (api) api.window_maximize();
+      });
+    }
+    if (btnClose) {
+      btnClose.addEventListener('click', function () {
+        if (api) api.window_close();
+      });
+    }
+  }
 
   // ============================================================
   // 2. NAVIGATION
