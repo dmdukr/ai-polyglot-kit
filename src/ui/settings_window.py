@@ -8,7 +8,6 @@ The main thread event loop in main.py picks up the signal.
 from __future__ import annotations
 
 import logging
-import os
 import queue
 import threading
 from pathlib import Path
@@ -23,14 +22,14 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # Signal queue: main thread waits on this for "open settings" commands
-_settings_queue: queue.Queue[AppConfig | None] = queue.Queue()
+_settings_queue: queue.Queue[tuple[AppConfig, AudioCapture | None, Callable[..., None] | None] | None] = queue.Queue()
 _window_open = threading.Event()
 
 
 def show_settings(
     config: AppConfig,
-    audio_capture: AudioCapture | None = None,  # noqa: ARG001
-    on_save: Callable[..., None] | None = None,  # noqa: ARG001
+    audio_capture: AudioCapture | None = None,
+    on_save: Callable[..., None] | None = None,
 ) -> None:
     """Request the main thread to open Settings window.
 
@@ -42,7 +41,7 @@ def show_settings(
         return
 
     logger.info("Requesting Settings window open")
-    _settings_queue.put(config)
+    _settings_queue.put((config, audio_capture, on_save))
 
 
 def run_settings_loop() -> None:
@@ -52,13 +51,15 @@ def run_settings_loop() -> None:
     Blocks the main thread, waiting for settings open requests.
     """
     while True:
-        config = _settings_queue.get()  # blocks until signal
-        if config is None:
+        request = _settings_queue.get()  # blocks until signal
+        if request is None:
             break  # shutdown signal
+
+        config, audio_capture, on_save = request
 
         _window_open.set()
         try:
-            _open_webview_window(config)
+            _open_webview_window(config, audio_capture, on_save)
         except Exception:
             logger.exception("Settings window error")
         finally:
@@ -70,13 +71,18 @@ def shutdown_settings_loop() -> None:
     _settings_queue.put(None)
 
 
-def _open_webview_window(config: AppConfig) -> None:
+def _open_webview_window(
+    config: AppConfig,
+    audio_capture: AudioCapture | None = None,
+    on_save: Callable[..., None] | None = None,
+) -> None:
     """Create and show a PyWebView window. Runs on main thread."""
     import webview  # noqa: PLC0415
 
+    from src.config import APP_DIR  # noqa: PLC0415
     from src.ui.web_bridge import SettingsBridge  # noqa: PLC0415
 
-    bridge = SettingsBridge(config, None, None)
+    bridge = SettingsBridge(config, audio_capture, on_save)
 
     web_dir = _find_web_dir()
     if web_dir is None:
@@ -93,7 +99,7 @@ def _open_webview_window(config: AppConfig) -> None:
     # Also check what's actually in config.yaml on disk
     import yaml as _yaml  # noqa: PLC0415
 
-    _cfg_path = Path(os.environ.get("APPDATA", "")) / "AIPolyglotKit" / "config.yaml"
+    _cfg_path = APP_DIR / "config.yaml"
     _disk_lang = "?"
     if _cfg_path.exists():
         try:
@@ -153,6 +159,12 @@ def _open_webview_window(config: AppConfig) -> None:
     html_content = html_content.replace(
         '<html lang="en" data-theme="dark">',
         f'<html lang="{lang}" data-theme="dark" data-initial-lang="{lang}">',
+    )
+
+    # Set correct language in dropdown (remove any existing 'selected', add to correct option)
+    html_content = html_content.replace(
+        f'<option value="{lang}">',
+        f'<option value="{lang}" selected>',
     )
 
     window = webview.create_window(
