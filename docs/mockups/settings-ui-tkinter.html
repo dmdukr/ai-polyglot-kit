@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Polyglot Kit v6.0 — Settings UI (tkinter-realistic)</title>
+<style>
+  /* ========================================
+     TKINTER-REALISTIC MOCKUP
+     sv_ttk dark theme constraints:
+     - No gradients (solid colors only)
+     - No rounded corners on widgets
+     - No box-shadow
+     - No animations
+     - No backdrop-filter
+     - No text gradients
+     - Flat buttons, flat inputs
+     - Toggle = Canvas custom draw (simplified)
+     - Cards = Frame with 1px border
+     ======================================== */
+  :root {
+    --bg-primary: #1c1c1c;
+    --bg-secondary: #2b2b2b;
+    --bg-card: #2b2b2b;
+    --bg-input: #343434;
+    --fg-primary: #e0e0e0;
+    --fg-secondary: #888888;
+    --accent: #a08030;
+    --accent-hover: #b89838;
+    --accent-text: #d4b050;
+    --success: #68a868;
+    --warning: #c8a050;
+    --error: #c06060;
+    --border: #404040;
+    --border-light: #4a4a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--fg-primary);
+    background: #141414;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  /* Window — tkinter Toplevel with DWM dark titlebar */
+  .window {
+    width: 860px;
+    height: 620px;
+    background: var(--bg-primary);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+  }
+
+  /* Title bar — DWM renders this natively, we simulate */
+  .titlebar {
+    height: 32px;
+    background: #202020;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .titlebar-icon { width: 16px; height: 16px; margin-right: 8px; background: var(--accent); border-radius: 2px; }
+  .titlebar-text { font-size: 12px; color: var(--fg-secondary); flex: 1; }
+  .titlebar-controls { display: flex; }
+  .titlebar-btn {
+    width: 46px; height: 31px; border: none; background: transparent;
+    color: var(--fg-secondary); font-size: 10px; cursor: pointer; font-family: "Segoe MDL2 Assets", sans-serif;
+  }
+  .titlebar-btn:hover { background: #404040; }
+  .titlebar-btn.close:hover { background: #c42b1c; color: white; }
+
+  /* Main layout — PanedWindow or Frame grid */
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  /* Sidebar — Listbox or Frame with Labels */
+  .sidebar {
+    width: 170px;
+    background: var(--bg-secondary);
+    padding: 4px 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    padding: 8px 12px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--fg-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .sidebar-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    color: var(--fg-secondary);
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar-item:hover { background: #363636; color: var(--fg-primary); }
+  .sidebar-item.active {
+    color: var(--accent-text);
+    background: #363636;
+    border-left-color: var(--accent);
+  }
+  .sidebar-bottom { margin-top: auto; padding: 8px; }
+  .btn-upgrade {
+    width: 100%;
+    padding: 6px;
+    background: var(--accent);
+    color: #1c1c1c;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .btn-upgrade:hover { background: var(--accent-hover); }
+
+  /* Content area — Frame with scrollbar */
+  .content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: none;
+  }
+  .content.active { display: block; }
+  .content::-webkit-scrollbar { width: 12px; }
+  .content::-webkit-scrollbar-track { background: var(--bg-primary); }
+  .content::-webkit-scrollbar-thumb { background: #505050; }
+
+  .page-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--fg-primary);
+  }
+
+  /* Cards — LabelFrame with flat relief */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--accent-text);
+  }
+
+  /* Form rows */
+  .form-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid #353535;
+  }
+  .form-row:last-child { border-bottom: none; }
+  .form-label { font-size: 13px; color: var(--fg-primary); }
+  .form-hint { font-size: 11px; color: var(--fg-secondary); margin-top: 1px; }
+
+  /* Inputs — ttk.Entry, ttk.Combobox */
+  select, input[type="text"], input[type="number"], input[type="password"] {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--fg-primary);
+    padding: 4px 8px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    min-width: 200px;
+  }
+  select:focus, input:focus { border-color: var(--accent); }
+
+  textarea {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--fg-primary);
+    padding: 6px 8px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    resize: vertical;
+  }
+  textarea:focus { border-color: var(--accent); }
+
+  /* Toggle — Canvas custom widget (pill shape) */
+  .toggle {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #505050;
+    border-radius: 10px;
+    transition: 0.15s;
+  }
+  .toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background: #ccc;
+    border-radius: 50%;
+    transition: 0.15s;
+  }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); background: white; }
+
+  /* Buttons — ttk.Button */
+  .btn {
+    padding: 4px 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--fg-primary);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+  }
+  .btn:hover { background: #404040; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #1c1c1c;
+    font-weight: 500;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-sm { padding: 3px 8px; font-size: 11px; }
+  .btn-danger { color: var(--error); border-color: var(--error); }
+  .btn-danger:hover { background: #3a2020; }
+
+  /* Footer — Frame with buttons */
+  .footer {
+    padding: 8px 16px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+  }
+
+  /* RMS bar — Canvas rectangle */
+  .rms-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-input);
+    margin-top: 6px;
+  }
+  .rms-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 45%;
+  }
+
+  /* Table — ttk.Treeview */
+  .table { width: 100%; border-collapse: collapse; }
+  .table th {
+    text-align: left;
+    padding: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--fg-secondary);
+    border-bottom: 1px solid var(--border);
+  }
+  .table td {
+    padding: 6px;
+    font-size: 13px;
+    border-bottom: 1px solid #353535;
+  }
+  .table tr:hover { background: #363636; }
+
+  /* Stats — Labels with large font in Frame */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-text);
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--fg-secondary);
+    margin-top: 4px;
+  }
+  .stat-card.highlight { border-color: var(--accent); }
+
+  /* History list — Treeview or Frame with Labels */
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #353535;
+    cursor: pointer;
+    gap: 10px;
+  }
+  .history-item:hover { background: #363636; }
+  .history-preview { flex: 1; }
+  .history-text { font-size: 13px; color: var(--fg-primary); }
+  .history-meta { font-size: 11px; color: var(--fg-secondary); margin-top: 1px; }
+  .history-actions { display: flex; gap: 4px; }
+
+  /* Search — Entry with prefix label */
+  .search-wrap { position: relative; margin-bottom: 8px; }
+  .search-wrap input { width: 100%; padding-left: 24px; }
+  .search-icon { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); color: var(--fg-secondary); font-size: 13px; }
+
+  /* Hotkey — Label with border, monospace */
+  .hotkey-input {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--accent-text);
+    padding: 3px 8px;
+    font-size: 12px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  /* Status dot — Canvas oval */
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .status-dot.online { background: var(--success); }
+  .status-dot.offline { background: var(--warning); }
+
+  /* Badge — Label with colored background */
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .badge-success { border-color: var(--success); color: var(--success); }
+  .badge-warning { border-color: var(--warning); color: var(--warning); }
+  .badge-error { border-color: var(--error); color: var(--error); }
+  .badge-info { border-color: #7070a0; color: #9090c0; }
+
+  /* Voice enrollment — Canvas circle */
+  .voice-circle {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-size: 28px;
+    color: var(--fg-secondary);
+  }
+  .voice-circle.enrolled { border-color: var(--accent); color: var(--accent-text); }
+</style>
+</head>
+<body>
+
+<div class="window">
+  <div class="titlebar">
+    <div class="titlebar-icon"></div>
+    <span class="titlebar-text">AI Polyglot Kit — Settings</span>
+    <div class="titlebar-controls">
+      <button class="titlebar-btn">&#x2014;</button>
+      <button class="titlebar-btn">&#x2610;</button>
+      <button class="titlebar-btn close">&#x2715;</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sidebar-section">Settings</div>
+      <div class="sidebar-item active" data-page="general">General</div>
+      <div class="sidebar-item" data-page="audio">Audio</div>
+      <div class="sidebar-item" data-page="stt">STT</div>
+      <div class="sidebar-item" data-page="llm">LLM</div>
+      <div class="sidebar-item" data-page="dictation">Dictation</div>
+
+      <div class="sidebar-section">Content</div>
+      <div class="sidebar-item" data-page="dictionary">Dictionary</div>
+      <div class="sidebar-item" data-page="replacements">Replacements</div>
+      <div class="sidebar-item" data-page="instructions">Instructions</div>
+      <div class="sidebar-item" data-page="history">History</div>
+
+      <div class="sidebar-section">Advanced</div>
+      <div class="sidebar-item" data-page="speaker">Speaker Lock</div>
+      <div class="sidebar-item" data-page="translate">Translate</div>
+      <div class="sidebar-item" data-page="network">Network</div>
+      <div class="sidebar-item" data-page="stats">Stats</div>
+      <div class="sidebar-item" data-page="account">Account</div>
+
+      <div class="sidebar-bottom">
+        <button class="btn-upgrade">Upgrade to Pro</button>
+      </div>
+    </div>
+
+    <!-- GENERAL -->
+    <div class="content active" id="page-general">
+      <div class="page-title">General</div>
+      <div class="card">
+        <div class="card-title">Appearance</div>
+        <div class="form-row">
+          <div><div class="form-label">Theme</div><div class="form-hint">Choose dark or light mode</div></div>
+          <select><option selected>Dark</option><option>Light</option><option>System</option></select>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">Language</div><div class="form-hint">Interface language</div></div>
+          <select><option>English</option><option selected>Ukrainian</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Startup</div>
+        <div class="form-row">
+          <div class="form-label">Launch on system startup</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Start minimized to tray</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Keybindings</div>
+        <div class="form-row">
+          <div class="form-label">Record (hold)</div>
+          <span class="hotkey-input">F12</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Feedback (double-tap)</div>
+          <span class="hotkey-input">F11</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Cancel recording</div>
+          <span class="hotkey-input">Escape</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Paste last transcript</div>
+          <span class="hotkey-input">Ctrl+Shift+V</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIO -->
+    <div class="content" id="page-audio">
+      <div class="page-title">Audio</div>
+      <div class="card">
+        <div class="card-title">Microphone</div>
+        <div class="form-row">
+          <div><div class="form-label">Input Device</div><div class="form-hint">Select your microphone</div></div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select style="min-width:220px"><option>Jabra Link 370 (USB Audio)</option><option>Realtek HD Audio</option></select>
+            <button class="btn btn-sm btn-primary">Test</button>
+          </div>
+        </div>
+        <div class="rms-bar"><div class="rms-fill"></div></div>
+        <div class="form-row" style="margin-top:6px">
+          <div class="form-label">Auto-switch to new USB/headset devices</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Noise Suppression</div>
+        <div class="form-row">
+          <div><div class="form-label">RNNoise denoising</div><div class="form-hint">Neural noise suppression for background noise</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">Adaptive gain control</div><div class="form-hint">Auto-adjust volume level continuously</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Background Audio</div>
+        <div class="form-row">
+          <div><div class="form-label">Mute background audio during recording</div><div class="form-hint">Lower other apps volume to 10%</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- STT -->
+    <div class="content" id="page-stt">
+      <div class="page-title">Speech to Text</div>
+      <div class="card">
+        <div class="card-title">Online Provider</div>
+        <div class="form-row">
+          <div class="form-label">Provider</div>
+          <select><option selected>Groq (Whisper)</option><option>Deepgram</option><option>Google Cloud</option><option>OpenAI Whisper</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Model</div>
+          <select><option selected>whisper-large-v3-turbo</option><option>whisper-large-v3</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Language</div>
+          <select><option>Auto-detect</option><option selected>Ukrainian</option><option>English</option><option>Russian</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Offline Fallback</div>
+        <div class="form-row">
+          <div><div class="form-label">STT Mode</div><div class="form-hint">How to handle network unavailability</div></div>
+          <select><option selected>Auto (online first, offline fallback)</option><option>Online only</option><option>Offline only</option></select>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">Offline model</div><div class="form-hint">faster-whisper medium (750 MB)</div></div>
+          <span class="badge badge-success">Downloaded</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label" style="color:var(--warning)">! Offline mode has reduced accuracy for multilingual dictation</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Connection Status</div>
+        <div class="form-row">
+          <div class="form-label"><span class="status-dot online"></span>Online — Groq API connected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LLM -->
+    <div class="content" id="page-llm">
+      <div class="page-title">LLM Normalization</div>
+      <div class="card">
+        <div class="card-title">Provider</div>
+        <div class="form-row">
+          <div class="form-label">Provider</div>
+          <select><option selected>Groq</option><option>OpenAI</option><option>Anthropic</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Model</div>
+          <select><option selected>llama-3.3-70b-versatile</option><option>llama-3.1-8b-instant</option></select>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">Temperature</div><div class="form-hint">Lower = more consistent, higher = more creative</div></div>
+          <input type="number" value="0.3" min="0" max="1" step="0.1" style="min-width:80px">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Normalization</div>
+        <div class="form-row">
+          <div class="form-label">Enable LLM text normalization</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Add punctuation</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Fix grammar</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- DICTATION -->
+    <div class="content" id="page-dictation">
+      <div class="page-title">Dictation</div>
+      <div class="card">
+        <div class="card-title">Context-Aware Formatting</div>
+        <div class="form-row">
+          <div><div class="form-label">Adapt style to active app</div><div class="form-hint">Casual in Slack, formal in Word, technical in VS Code</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">App Styles</div>
+        <table class="table">
+          <thead><tr><th>Application</th><th>Style</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>slack.exe</td><td><select style="min-width:120px"><option selected>Casual</option><option>Formal</option><option>Technical</option><option>Email</option></select></td><td><button class="btn btn-sm btn-danger">x</button></td></tr>
+            <tr><td>code.exe</td><td><select style="min-width:120px"><option>Casual</option><option>Formal</option><option selected>Technical</option><option>Email</option></select></td><td><button class="btn btn-sm btn-danger">x</button></td></tr>
+            <tr><td>outlook.exe</td><td><select style="min-width:120px"><option>Casual</option><option>Formal</option><option>Technical</option><option selected>Email</option></select></td><td><button class="btn btn-sm btn-danger">x</button></td></tr>
+            <tr><td>word.exe</td><td><select style="min-width:120px"><option>Casual</option><option selected>Formal</option><option>Technical</option><option>Email</option></select></td><td><button class="btn btn-sm btn-danger">x</button></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px"><button class="btn btn-sm">+ Add Application</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Text Injection</div>
+        <div class="form-row">
+          <div class="form-label">Default injection method</div>
+          <select><option selected>Keyboard simulation</option><option>Clipboard paste</option></select>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Auto-fallback to clipboard on failure</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">Sanitize terminal input</div><div class="form-hint">Strip shell metacharacters for cmd/powershell</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- DICTIONARY -->
+    <div class="content" id="page-dictionary">
+      <div class="page-title">Dictionary</div>
+      <div class="card">
+        <div class="card-title">Custom Words &amp; Phrases</div>
+        <div class="form-hint" style="margin-bottom:8px">Words added here help STT recognition and prevent LLM from "correcting" them</div>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input type="text" placeholder="Add new word or phrase..." style="flex:1">
+          <button class="btn btn-primary btn-sm">Add</button>
+        </div>
+        <div style="background:var(--bg-input);border:1px solid var(--border);max-height:280px;overflow-y:auto">
+          <div class="form-row" style="padding:4px 8px"><span>Polyglot Kit</span><button class="btn btn-sm btn-danger" style="margin-left:auto">x</button></div>
+          <div class="form-row" style="padding:4px 8px"><span>PyAudio</span><button class="btn btn-sm btn-danger" style="margin-left:auto">x</button></div>
+          <div class="form-row" style="padding:4px 8px"><span>WebRTC VAD</span><button class="btn btn-sm btn-danger" style="margin-left:auto">x</button></div>
+          <div class="form-row" style="padding:4px 8px"><span>CTranslate2</span><button class="btn btn-sm btn-danger" style="margin-left:auto">x</button></div>
+          <div class="form-row" style="padding:4px 8px"><span>Proxmox</span><button class="btn btn-sm btn-danger" style="margin-left:auto">x</button></div>
+          <div class="form-row" style="padding:4px 8px"><span>pycaw</span><button class="btn btn-sm btn-danger" style="margin-left:auto">x</button></div>
+        </div>
+        <div class="form-hint" style="margin-top:4px">6 terms</div>
+      </div>
+    </div>
+
+    <!-- REPLACEMENTS -->
+    <div class="content" id="page-replacements">
+      <div class="page-title">Text Replacements</div>
+      <div class="card">
+        <div class="card-title">Voice Macros</div>
+        <div class="form-hint" style="margin-bottom:8px">Say the trigger phrase to auto-replace with text</div>
+        <table class="table">
+          <thead><tr><th>Trigger</th><th>Replacement</th><th>Match</th><th></th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent-text)">"my email"</td><td>dmitry@example.com</td><td><span class="badge badge-info">Fuzzy</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+            <tr><td style="color:var(--accent-text)">"office address"</td><td>Khreshchatyk 22, office 301</td><td><span class="badge badge-info">Fuzzy</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+            <tr><td style="color:var(--accent-text)">"meeting link"</td><td>https://meet.google.com/abc...</td><td><span class="badge badge-info">Fuzzy</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+            <tr><td style="color:var(--accent-text)">"signature"</td><td style="white-space:pre-line;font-size:11px">Regards,
+Dmitry Ivanov</td><td><span class="badge badge-warning">Strict</span></td><td><button class="btn btn-sm">Edit</button></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:8px;display:flex;gap:6px">
+          <button class="btn btn-primary btn-sm">+ Add Replacement</button>
+          <button class="btn btn-sm">Import</button>
+          <button class="btn btn-sm">Export</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="content" id="page-instructions">
+      <div class="page-title">Custom Instructions</div>
+      <div class="card">
+        <div class="card-title">LLM Normalization Instructions</div>
+        <div class="form-hint" style="margin-bottom:8px">These instructions are appended to the normalization prompt. Max 500 characters.</div>
+        <textarea rows="8" placeholder="Use all lowercase in Slack. Break text into paragraphs when I pause for more than 2 seconds.">Use all lowercase in Slack. Break text into paragraphs when I pause for more than 2 seconds. Don't start sentences with 'Because'.</textarea>
+        <div class="form-hint" style="margin-top:4px;text-align:right">128 / 500</div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="content" id="page-history">
+      <div class="page-title">History</div>
+      <div class="card" style="padding:8px">
+        <div class="search-wrap">
+          <span class="search-icon">Q</span>
+          <input type="text" placeholder="Search dictations..." style="width:100%;padding-left:24px">
+        </div>
+        <div class="history-item">
+          <div class="history-preview">
+            <div class="history-text">Meeting tomorrow at 10am, discuss the deployment pipeline...</div>
+            <div class="history-meta">Today 14:32 | Slack | 12 words | 3.2s</div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-sm">Copy</button>
+            <button class="btn btn-sm btn-danger">Del</button>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-preview">
+            <div class="history-text">Please review the PR when you get a chance, I've addressed all...</div>
+            <div class="history-meta">Today 13:15 | VS Code | 18 words | 5.1s</div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-sm">Copy</button>
+            <button class="btn btn-sm btn-danger">Del</button>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-preview">
+            <div class="history-text">The integration tests are passing but we need to add coverage for...</div>
+            <div class="history-meta">Today 11:48 | Telegram | 24 words | 7.8s</div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-sm">Copy</button>
+            <button class="btn btn-sm btn-danger">Del</button>
+          </div>
+        </div>
+        <div class="history-item">
+          <div class="history-preview">
+            <div class="history-text">Dear team, I wanted to share the quarterly results which show a...</div>
+            <div class="history-meta">Yesterday 17:20 | Outlook | 45 words | 12.3s</div>
+          </div>
+          <div class="history-actions">
+            <button class="btn btn-sm">Copy</button>
+            <button class="btn btn-sm btn-danger">Del</button>
+          </div>
+        </div>
+        <div style="text-align:center;padding:8px;color:var(--fg-secondary);font-size:12px">
+          Showing 4 of 127 dictations | <a href="#" style="color:var(--accent-text)">Load more</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="form-row">
+          <div><div class="form-label">Sensitive mode</div><div class="form-hint">Pause history recording (for passwords)</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Retention period (days)</div>
+          <input type="number" value="90" min="1" max="365" style="min-width:80px">
+        </div>
+      </div>
+    </div>
+
+    <!-- SPEAKER LOCK -->
+    <div class="content" id="page-speaker">
+      <div class="page-title">Speaker Lock</div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div class="voice-circle enrolled">&#10003;</div>
+        <div style="font-size:14px;font-weight:500;margin-bottom:4px">Voice Profile Enrolled</div>
+        <div class="form-hint">Recorded on Mar 25, 2026 | 4.2 seconds</div>
+        <div style="margin-top:10px;display:flex;gap:6px;justify-content:center">
+          <button class="btn btn-primary btn-sm">Re-record</button>
+          <button class="btn btn-sm btn-danger">Delete Profile</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Settings</div>
+        <div class="form-row">
+          <div><div class="form-label">Enable Speaker Lock</div><div class="form-hint">Only accept dictation from your voice</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">Similarity threshold</div><div class="form-hint">Higher = stricter (may reject in noisy rooms)</div></div>
+          <input type="number" value="0.65" min="0.3" max="0.95" step="0.05" style="min-width:80px">
+        </div>
+        <div class="form-row">
+          <div><div class="form-label">On timeout</div><div class="form-hint">What to do if verification doesn't complete</div></div>
+          <select style="min-width:140px"><option selected>Suppress (safe)</option><option>Accept (fast)</option></select>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Security</div>
+        <div class="form-row">
+          <div class="form-label" style="color:var(--success)">Voice profile encrypted with DPAPI</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSLATE -->
+    <div class="content" id="page-translate">
+      <div class="page-title">Translation</div>
+      <div class="card">
+        <div class="card-title">Chrome Extension</div>
+        <div class="form-row">
+          <div class="form-label">Enable page translation</div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Target language</div>
+          <select><option selected>Ukrainian</option><option>English</option><option>Russian</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- NETWORK -->
+    <div class="content" id="page-network">
+      <div class="page-title">Network</div>
+      <div class="card">
+        <div class="card-title">Connection</div>
+        <div class="form-row">
+          <div class="form-label"><span class="status-dot online"></span>Online — all services connected</div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">HTTP timeout (seconds)</div>
+          <input type="number" value="10" min="1" max="60" style="min-width:80px">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Proxy</div>
+        <div class="form-row">
+          <div class="form-label">Use proxy</div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Proxy URL</div>
+          <input type="text" placeholder="http://proxy:8080" disabled style="min-width:200px">
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="content" id="page-stats">
+      <div class="page-title">Stats</div>
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-value">12,847</div>
+          <div class="stat-label">Total Words Dictated</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">342</div>
+          <div class="stat-label">Total Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--success)">2h 14m</div>
+          <div class="stat-label">Time Saved</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:var(--warning)">7</div>
+          <div class="stat-label">Day Streak</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">Today</div>
+        <div class="form-row">
+          <div class="form-label">Words today</div>
+          <span style="font-weight:600;color:var(--accent-text)">487</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Sessions today</div>
+          <span style="font-weight:600">23</span>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Average accuracy</div>
+          <span style="font-weight:600;color:var(--success)">94.2%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div class="content" id="page-account">
+      <div class="page-title">Account</div>
+      <div class="card">
+        <div class="card-title">API Keys</div>
+        <div class="form-hint" style="margin-bottom:8px;color:var(--success)">Keys stored in Windows Credential Manager (encrypted)</div>
+        <div class="form-row">
+          <div class="form-label">Groq API Key</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" value="gsk_xxxxxxxxxxxx" style="min-width:200px">
+            <span class="badge badge-success">Valid</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">OpenAI API Key</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" placeholder="sk-..." style="min-width:200px">
+            <span class="badge badge-warning">Not set</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Deepgram API Key</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" placeholder="Enter key..." style="min-width:200px">
+            <span class="badge badge-warning">Not set</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Data</div>
+        <div class="form-row">
+          <div class="form-label">Export all settings</div>
+          <button class="btn btn-sm">Export YAML</button>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Clear all history</div>
+          <button class="btn btn-sm btn-danger">Clear</button>
+        </div>
+        <div class="form-row">
+          <div class="form-label">Reset to defaults</div>
+          <button class="btn btn-sm btn-danger">Reset</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <button class="btn">Cancel</button>
+    <button class="btn btn-primary">Save</button>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+      item.classList.add('active');
+      document.getElementById('page-' + item.dataset.page).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

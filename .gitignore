@@ -16,3 +16,7 @@ result*.txt
 *.wav
 =1.2.0
 GroqDictation.spec
+node_modules/
+package-lock.json
+package.json
+.eslintrc.json

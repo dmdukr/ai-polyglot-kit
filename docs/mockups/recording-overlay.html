@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Polyglot Kit — Recording Overlay Mockup</title>
+<style>
+  :root {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --accent: #e94560;
+    --accent-secondary: #533483;
+    --fg-primary: #ffffff;
+    --fg-secondary: #9e9e9e;
+    --success: #4CAF50;
+    --warning: #FF9800;
+    --border: #2a2a4a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: #2d2d44;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 48px;
+    padding: 48px;
+  }
+  h2 { color: var(--fg-secondary); font-size: 14px; font-weight: 500; margin-bottom: 12px; text-align: center; }
+
+  /* ---- Recording pill ---- */
+  .overlay-recording {
+    width: 320px;
+    background: rgba(26,26,46,0.92);
+    border-radius: 20px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+
+  .rec-indicator {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  .waveform {
+    flex: 1;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .wave-bar {
+    width: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: height 0.1s ease;
+  }
+
+  .rec-info {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .rec-timer {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--fg-primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .rec-meta {
+    font-size: 10px;
+    color: var(--fg-secondary);
+  }
+  .rec-status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 3px;
+  }
+
+  /* ---- Processing pill ---- */
+  .overlay-processing {
+    width: 320px;
+    background: rgba(26,26,46,0.92);
+    border-radius: 20px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border: 1px solid var(--border);
+  }
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .proc-text {
+    font-size: 13px;
+    color: var(--fg-secondary);
+    flex: 1;
+  }
+  .proc-dots::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+
+  /* ---- Offline recording pill ---- */
+  .overlay-offline {
+    width: 320px;
+    background: rgba(26,26,46,0.92);
+    border-radius: 20px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,152,0,0.3);
+  }
+
+  /* ---- Cancel hint ---- */
+  .cancel-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--fg-secondary);
+    margin-top: -36px;
+  }
+  .cancel-hint kbd {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: "Segoe UI", monospace;
+  }
+
+  /* ---- Tray context menu ---- */
+  .tray-menu {
+    width: 200px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .tray-item {
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--fg-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tray-item:hover { background: rgba(233,69,96,0.12); }
+  .tray-sep { height: 1px; background: var(--border); margin: 4px 8px; }
+  .tray-item.danger { color: var(--accent); }
+  .tray-icon { width: 16px; text-align: center; }
+  .tray-check { color: var(--success); }
+</style>
+</head>
+<body>
+
+<div>
+  <h2>Recording (Online)</h2>
+  <div class="overlay-recording" id="rec-online">
+    <div class="rec-indicator"></div>
+    <div class="waveform" id="waveform"></div>
+    <div class="rec-info">
+      <div class="rec-timer" id="timer">0:03</div>
+      <div class="rec-meta"><span class="rec-status-dot" style="background:var(--success)"></span>Jabra &middot; UK</div>
+    </div>
+  </div>
+  <div class="cancel-hint"><kbd>Esc</kbd> to cancel</div>
+</div>
+
+<div>
+  <h2>Recording (Offline)</h2>
+  <div class="overlay-offline">
+    <div class="rec-indicator" style="background:var(--warning)"></div>
+    <div class="waveform" id="waveform2"></div>
+    <div class="rec-info">
+      <div class="rec-timer">0:07</div>
+      <div class="rec-meta"><span class="rec-status-dot" style="background:var(--warning)"></span>Offline &middot; UK</div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h2>Processing</h2>
+  <div class="overlay-processing">
+    <div class="spinner"></div>
+    <div class="proc-text">Transcribing<span class="proc-dots"></span></div>
+    <div class="rec-info">
+      <div class="rec-timer" style="font-size:13px;color:var(--fg-secondary)">3.2s</div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h2>Tray Menu</h2>
+  <div class="tray-menu">
+    <div class="tray-item"><span class="tray-icon">&#127908;</span> Jabra Link 370</div>
+    <div class="tray-sep"></div>
+    <div class="tray-item"><span class="tray-icon tray-check">&#10003;</span> Online mode</div>
+    <div class="tray-item"><span class="tray-icon">&#128274;</span> Sensitive mode</div>
+    <div class="tray-sep"></div>
+    <div class="tray-item"><span class="tray-icon">&#9881;</span> Settings</div>
+    <div class="tray-item"><span class="tray-icon">&#128197;</span> History</div>
+    <div class="tray-item"><span class="tray-icon">&#128200;</span> Stats</div>
+    <div class="tray-sep"></div>
+    <div class="tray-item danger"><span class="tray-icon">&#9210;</span> Quit</div>
+  </div>
+</div>
+
+<script>
+  // Generate waveform bars
+  function createWaveform(id, count) {
+    const container = document.getElementById(id);
+    for (let i = 0; i < count; i++) {
+      const bar = document.createElement('div');
+      bar.className = 'wave-bar';
+      bar.style.height = '4px';
+      container.appendChild(bar);
+    }
+  }
+  createWaveform('waveform', 40);
+  createWaveform('waveform2', 40);
+
+  // Animate waveforms
+  function animateWave(id) {
+    const bars = document.getElementById(id).querySelectorAll('.wave-bar');
+    bars.forEach((bar, i) => {
+      const h = 4 + Math.random() * 28;
+      bar.style.height = h + 'px';
+    });
+  }
+  setInterval(() => { animateWave('waveform'); animateWave('waveform2'); }, 100);
+
+  // Timer
+  let sec = 3;
+  setInterval(() => {
+    sec++;
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    document.getElementById('timer').textContent = m + ':' + String(s).padStart(2, '0');
+  }, 1000);
+</script>
+</body>
+</html>
