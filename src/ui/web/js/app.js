@@ -280,15 +280,53 @@
   async function loadTranslations(lang) {
     // Load i18n.json once
     if (!i18nData) {
+      // Try fetch first
       try {
         var resp = await fetch('i18n.json');
-        i18nData = await resp.json();
+        if (resp.ok) {
+          i18nData = await resp.json();
+        }
       } catch (e) {
-        console.warn('[i18n] Failed to load i18n.json:', e);
-        i18nData = {};
+        console.warn('[i18n] fetch failed (file:// protocol?):', e);
       }
+
+      // Fallback: load via XMLHttpRequest (works on file://)
+      if (!i18nData) {
+        try {
+          i18nData = await new Promise(function(resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', 'i18n.json', true);
+            xhr.onload = function() {
+              if (xhr.status === 200 || xhr.status === 0) {
+                resolve(JSON.parse(xhr.responseText));
+              } else {
+                reject(new Error('XHR status ' + xhr.status));
+              }
+            };
+            xhr.onerror = function() { reject(new Error('XHR error')); };
+            xhr.send();
+          });
+        } catch (e2) {
+          console.warn('[i18n] XHR fallback also failed:', e2);
+        }
+      }
+
+      // Fallback: load via bridge
+      if (!i18nData && api && api.get_translations) {
+        try {
+          var bridgeTr = await api.get_translations();
+          if (bridgeTr) {
+            i18nData = { en: {}, uk: bridgeTr };
+          }
+        } catch (e3) {
+          console.warn('[i18n] bridge fallback failed:', e3);
+        }
+      }
+
+      if (!i18nData) i18nData = {};
     }
-    translations = (i18nData && i18nData[lang]) || {};
+    translations = (i18nData[lang]) || {};
+    console.log('[i18n] Loaded', Object.keys(translations).length, 'keys for', lang);
   }
 
   /**
