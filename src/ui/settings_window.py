@@ -105,7 +105,7 @@ def _open_webview_window(config: AppConfig) -> None:
             logger.debug("Could not set titlebar theme", exc_info=True)
 
     window.events.shown += _on_shown
-    webview.start(debug=False)
+    webview.start(debug=True)
     logger.info("PyWebView Settings window closed")
 
 

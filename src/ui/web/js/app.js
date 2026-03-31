@@ -74,6 +74,10 @@
     }
 
     console.log('[app.js] Settings UI initialized, bridge=' + bridgeReady);
+
+    // DEBUG: show status in title bar
+    var dbg = 'bridge=' + bridgeReady + ' lang=' + currentLang + ' keys=' + Object.keys(translations).length;
+    document.title = 'AI Polyglot Kit — Settings [' + dbg + ']';
   }
 
   // Two possible entry points: pywebview bridge or plain DOM ready
