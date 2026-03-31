@@ -8,6 +8,7 @@ The main thread event loop in main.py picks up the signal.
 from __future__ import annotations
 
 import logging
+import os
 import queue
 import threading
 from pathlib import Path
