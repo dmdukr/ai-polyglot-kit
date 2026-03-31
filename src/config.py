@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 # Default paths
-APP_VERSION = "6.1.34"
+APP_VERSION = "6.1.35"
 APP_NAME = "AIPolyglotKit"
 GITHUB_REPO = "dmdukr/ai-polyglot-kit"
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME

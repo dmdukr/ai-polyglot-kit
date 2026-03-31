@@ -82,13 +82,17 @@ def _open_webview_window(config: AppConfig) -> None:
         logger.error("Cannot find web UI directory")
         return
 
+    logger.info("web_dir=%s, files=%s", web_dir, list(web_dir.glob("*"))[:10])
+
     # Load HTML and apply translations server-side (no JS race conditions)
     import json  # noqa: PLC0415
     import re  # noqa: PLC0415
 
     lang = config.ui.language if hasattr(config, "ui") and hasattr(config.ui, "language") else "uk"
+    logger.info("i18n: lang=%s", lang)
     html_path = web_dir / "index.html"
     html_content = html_path.read_text(encoding="utf-8")
+    logger.info("i18n: HTML loaded, %d bytes", len(html_content))
 
     # Apply translations directly in HTML if not English
     if lang != "en":
