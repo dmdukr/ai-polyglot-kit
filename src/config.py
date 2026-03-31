@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 # Default paths
-APP_VERSION = "6.1.31"
+APP_VERSION = "6.1.32"
 APP_NAME = "AIPolyglotKit"
 GITHUB_REPO = "dmdukr/ai-polyglot-kit"
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME
@@ -298,3 +298,16 @@ def setup_logging(config: LoggingConfig) -> None:
             logging.getLogger(mod).setLevel(logging.DEBUG)
         logging.getLogger("src.context").setLevel(logging.DEBUG)
         logger.info("Dev logging enabled for src.context.* (DEBUG level)")
+
+    # Better Stack remote logging
+    try:
+        from src.betterstack_handler import BetterStackHandler  # noqa: PLC0415
+
+        bs_handler = BetterStackHandler()
+        bs_handler.setFormatter(logging.Formatter(
+            "%(asctime)s [%(threadName)s] %(levelname)s %(name)s: %(message)s"
+        ))
+        root.addHandler(bs_handler)
+        logger.info("Better Stack remote logging enabled")
+    except Exception:
+        pass  # Better Stack optional
