@@ -8,6 +8,27 @@
   'use strict';
 
   // ============================================================
+  // 0. EARLY LANGUAGE APPLY (before bridge, before init)
+  // ============================================================
+  // Python passes ?lang=uk in URL. Apply translations immediately.
+  (function earlyLang() {
+    var params = new URLSearchParams(window.location.search);
+    var lang = params.get('lang');
+    if (lang && lang !== 'en' && typeof _EMBEDDED_I18N !== 'undefined' && _EMBEDDED_I18N[lang]) {
+      var tr = _EMBEDDED_I18N[lang];
+      document.querySelectorAll('[data-i18n]').forEach(function (el) {
+        var key = el.getAttribute('data-i18n');
+        if (tr[key]) el.textContent = tr[key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
+        var key = el.getAttribute('data-i18n-placeholder');
+        if (tr[key]) el.placeholder = tr[key];
+      });
+      document.documentElement.lang = lang;
+    }
+  })();
+
+  // ============================================================
   // 1. INITIALIZATION
   // ============================================================
 

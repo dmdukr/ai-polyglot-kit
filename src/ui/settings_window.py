@@ -82,9 +82,13 @@ def _open_webview_window(config: AppConfig) -> None:
         logger.error("Cannot find web UI directory")
         return
 
+    # Pass language as query param so JS can apply it before bridge is ready
+    lang = config.ui.language if hasattr(config, "ui") and hasattr(config.ui, "language") else "uk"
+    url_with_lang = str(web_dir / "index.html") + f"?lang={lang}"
+
     window = webview.create_window(
         "AI Polyglot Kit \u2014 Settings",
-        url=str(web_dir / "index.html"),
+        url=url_with_lang,
         js_api=bridge,
         width=900,
         height=640,
@@ -105,7 +109,7 @@ def _open_webview_window(config: AppConfig) -> None:
             logger.debug("Could not set titlebar theme", exc_info=True)
 
     window.events.shown += _on_shown
-    webview.start(debug=True)
+    webview.start(debug=False)
     logger.info("PyWebView Settings window closed")
 
 
