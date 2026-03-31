@@ -80,24 +80,30 @@
     document.title = 'AI Polyglot Kit — Settings [' + dbg + ']';
   }
 
-  // Two possible entry points: pywebview bridge or plain DOM ready
-  if (window.pywebview && window.pywebview.api) {
-    // Bridge already available (rare, but handle it)
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
+  // Wait for bridge: poll every 50ms (pywebviewready event is unreliable)
+  function waitForBridge() {
+    if (window.pywebview && window.pywebview.api) {
       init();
+    } else {
+      var attempts = 0;
+      var poll = setInterval(function () {
+        attempts++;
+        if (window.pywebview && window.pywebview.api) {
+          clearInterval(poll);
+          init();
+        } else if (attempts > 100) { // 5 seconds
+          clearInterval(poll);
+          console.warn('[app.js] Bridge not found after 5s, running without it');
+          init();
+        }
+      }, 50);
     }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', waitForBridge);
   } else {
-    // Wait for pywebview to inject the bridge
-    window.addEventListener('pywebviewready', init);
-    // Fallback: if no bridge after 2s, init without it (dev/preview mode)
-    setTimeout(function () {
-      if (!bridgeReady) {
-        console.warn('[app.js] pywebview bridge not available, running in preview mode');
-        init();
-      }
-    }, 2000);
+    waitForBridge();
   }
 
 
