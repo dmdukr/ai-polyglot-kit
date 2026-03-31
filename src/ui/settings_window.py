@@ -82,16 +82,20 @@ def _open_webview_window(config: AppConfig) -> None:
         logger.error("Cannot find web UI directory")
         return
 
-    # Pass language + cache-buster as query params
-    import time as _time  # noqa: PLC0415
-
+    # Load HTML as string and inject language setting
     lang = config.ui.language if hasattr(config, "ui") and hasattr(config.ui, "language") else "uk"
-    cache_bust = int(_time.time())
-    url_with_lang = str(web_dir / "index.html") + f"?lang={lang}&_={cache_bust}"
+    html_path = web_dir / "index.html"
+    html_content = html_path.read_text(encoding="utf-8")
+
+    # Inject language into HTML so earlyLang() can read it without URL params
+    html_content = html_content.replace(
+        '<html lang="en" data-theme="dark">',
+        f'<html lang="{lang}" data-theme="dark" data-initial-lang="{lang}">',
+    )
 
     window = webview.create_window(
         "AI Polyglot Kit \u2014 Settings",
-        url=url_with_lang,
+        html=html_content,
         js_api=bridge,
         width=900,
         height=640,

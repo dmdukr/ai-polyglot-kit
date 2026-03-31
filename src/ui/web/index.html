@@ -2817,11 +2817,17 @@ var _EMBEDDED_I18N = {"en":{"account.application":"Application","account.checkUp
   // ============================================================
   // Python passes ?lang=uk in URL. Apply translations immediately.
   (function earlyLang() {
-    // Extract lang from URL — works on file:// and http://
+    // Read lang from: 1) data-initial-lang attr (set by Python), 2) URL param, 3) html lang attr
     var lang = null;
     try {
-      var match = window.location.href.match(/[?&]lang=([a-z]{2})/);
-      lang = match ? match[1] : null;
+      lang = document.documentElement.getAttribute('data-initial-lang');
+      if (!lang) {
+        var match = window.location.href.match(/[?&]lang=([a-z]{2})/);
+        lang = match ? match[1] : null;
+      }
+      if (!lang) {
+        lang = document.documentElement.lang;
+      }
     } catch(e) {}
 
     if (lang && lang !== 'en' && typeof _EMBEDDED_I18N !== 'undefined' && _EMBEDDED_I18N[lang]) {
