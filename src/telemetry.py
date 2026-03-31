@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 TELEMETRY_FILE = APP_DIR / "telemetry.json"
 AMPLITUDE_API = "https://api2.amplitude.com/2/httpapi"
-AMPLITUDE_API_KEY = "6ebfc1622451203d445e03813f921a77"
+AMPLITUDE_API_KEY = "YeXX4PHx_tLunrJOYn49wUHrWlMzQP41"
 
 
 def _get_install_id() -> str:
@@ -216,6 +216,62 @@ class TelemetryCollector:
 
     def record_error(self, error_type: str = "", detail: str = "") -> None:
         self.track("error", {"type": error_type, "detail": detail[:100]})
+
+    # ── Dev log events ─────────────────────────────────────────
+
+    def devlog_stt(self, provider: str = "", model: str = "", duration_s: float = 0,
+                   latency_ms: float = 0, language: str = "", success: bool = True) -> None:
+        self.track("devlog_stt", {
+            "provider": provider, "model": model,
+            "audio_s": round(duration_s, 1), "latency_ms": round(latency_ms),
+            "language": language, "success": success,
+        })
+
+    def devlog_llm(self, provider: str = "", model: str = "",
+                   tokens_in: int = 0, tokens_out: int = 0,
+                   latency_ms: float = 0, success: bool = True) -> None:
+        self.track("devlog_llm", {
+            "provider": provider, "model": model,
+            "tokens_in": tokens_in, "tokens_out": tokens_out,
+            "latency_ms": round(latency_ms), "success": success,
+        })
+
+    def devlog_context(self, keywords: int = 0, thread_id: int | None = None,
+                       cluster_id: int | None = None, resolved: int = 0,
+                       unresolved: int = 0, latency_ms: float = 0) -> None:
+        self.track("devlog_context", {
+            "keywords": keywords, "thread_id": thread_id,
+            "cluster_id": cluster_id, "resolved": resolved,
+            "unresolved": unresolved, "latency_ms": round(latency_ms),
+        })
+
+    def devlog_correction(self, diffs: int = 0, auto_promoted: int = 0,
+                          error_source: str = "") -> None:
+        self.track("devlog_correction", {
+            "diffs": diffs, "auto_promoted": auto_promoted,
+            "error_source": error_source,
+        })
+
+    def devlog_translate(self, provider: str = "", source_lang: str = "",
+                         target_lang: str = "", chars: int = 0,
+                         latency_ms: float = 0, success: bool = True) -> None:
+        self.track("devlog_translate", {
+            "provider": provider, "source_lang": source_lang,
+            "target_lang": target_lang, "chars": chars,
+            "latency_ms": round(latency_ms), "success": success,
+        })
+
+    def devlog_settings(self, action: str = "", detail: str = "") -> None:
+        self.track("devlog_settings", {"action": action, "detail": detail[:200]})
+
+    def devlog_hotkey(self, key: str = "", action: str = "") -> None:
+        self.track("devlog_hotkey", {"key": key, "action": action})
+
+    def devlog_update(self, from_version: str = "", to_version: str = "",
+                      success: bool = True) -> None:
+        self.track("devlog_update", {
+            "from": from_version, "to": to_version, "success": success,
+        })
 
     # ── Sending ─────────────────────────────────────────────────
 
