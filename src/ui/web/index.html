@@ -3269,7 +3269,7 @@ var _EMBEDDED_I18N = {"en":{"account.application":"Application","account.checkUp
       console.log('[config] Config loaded from backend');
     } catch (e) {
       console.error('[config] Failed to load config:', e);
-      showToast('Failed to load settings', 'error');
+      console.warn('[config] Settings load error (non-critical):', e.message);
     }
   }
 

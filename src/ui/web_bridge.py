@@ -146,11 +146,15 @@ class WebBridge:
     @_safe
     def get_config(self) -> dict[str, Any]:
         """Return the full configuration as a plain dict for the JS forms."""
-        data = asdict(self._config)
-        # Include autostart state (Windows registry)
+        logger.info("get_config called")
+        try:
+            data = self._config_to_web(self._config)
+        except Exception:
+            logger.exception("get_config: _config_to_web failed, using asdict fallback")
+            data = asdict(self._config)
         data["autostart"] = self._get_autostart()
-        # Include theme preference (stored separately)
         data["theme"] = self._load_theme()
+        logger.info("get_config: returning %d keys, language=%s", len(data), data.get("language", data.get("ui", {}).get("language", "?")))
         return data
 
     @_safe
@@ -162,7 +166,9 @@ class WebBridge:
 
         Returns ``{"success": True}`` on success.
         """
-        self._apply_config(data)
+        normalized = self._normalize_web_config(data)
+
+        self._apply_config(normalized)
         self._write_config()
         self._write_env()
         self._save_theme(data.get("theme", "auto"))
@@ -750,6 +756,118 @@ class WebBridge:
         self._apply_audio(data)
         self._apply_dictation(data)
         self._apply_ui(data)
+
+    @staticmethod
+    def _config_to_web(config: AppConfig) -> dict[str, Any]:
+        """Adapt the nested Python config to the flatter SPA contract."""
+        data = asdict(config)
+        ui = data.get("ui", {})
+        audio = data.get("audio", {})
+        providers = data.get("providers", {})
+
+        web_data = dict(data)
+        web_data["language"] = ui.get("language", "uk")
+        web_data["telemetry"] = data.get("telemetry", {}).get("enabled", False)
+        web_data["sound_feedback"] = bool(ui.get("sound_on_start", False) or ui.get("sound_on_stop", False))
+        web_data["show_overlay"] = ui.get("show_notifications", False)
+        web_data["hotkeys"] = {
+            "record": data.get("hotkey", ""),
+            "feedback": "",
+            "cancel": "",
+            "paste_last": "",
+            "translate": "",
+            "min_hold_ms": 200,
+        }
+        web_data["audio"] = {
+            **audio,
+            "device_id": audio.get("mic_device_index"),
+            "target_volume": audio.get("gain", 0.0),
+        }
+        web_data["stt"] = {
+            "providers": providers.get("stt", []),
+            "temperature": data.get("groq", {}).get("stt_temperature", 0.0),
+            "vad_sensitivity": audio.get("vad_aggressiveness", 1),
+        }
+        web_data["llm"] = {
+            "providers": providers.get("llm", []),
+        }
+        web_data["translate"] = {
+            "providers": providers.get("translation", []),
+        }
+
+        return web_data
+
+    @staticmethod
+    def _normalize_web_config(data: dict[str, Any]) -> dict[str, Any]:
+        """Adapt the flatter SPA payload back to the nested Python config."""
+        normalized = dict(data)
+
+        ui = normalized.get("ui") if isinstance(normalized.get("ui"), dict) else {}
+        if "language" in data:
+            ui["language"] = str(data["language"])
+        if "show_overlay" in data:
+            ui["show_notifications"] = bool(data["show_overlay"])
+        if "sound_feedback" in data:
+            ui["sound_on_start"] = bool(data["sound_feedback"])
+            ui["sound_on_stop"] = bool(data["sound_feedback"])
+        if ui:
+            normalized["ui"] = ui
+
+        if isinstance(data.get("telemetry"), bool):
+            normalized["telemetry"] = {"enabled": bool(data["telemetry"])}
+
+        hotkeys = data.get("hotkeys")
+        if isinstance(hotkeys, dict):
+            record_hotkey = str(hotkeys.get("record", "")).strip()
+            if record_hotkey:
+                normalized["hotkey"] = record_hotkey
+                normalized["ptt_key"] = record_hotkey
+
+        audio = data.get("audio")
+        if isinstance(audio, dict):
+            audio_data = dict(audio)
+            if "device_id" in audio and "mic_device_index" not in audio_data:
+                raw_device_id = audio.get("device_id")
+                if raw_device_id in (None, ""):
+                    audio_data["mic_device_index"] = None
+                else:
+                    try:
+                        audio_data["mic_device_index"] = int(raw_device_id)
+                    except (TypeError, ValueError):
+                        audio_data["mic_device_index"] = None
+            if "target_volume" in audio and "gain" not in audio_data:
+                try:
+                    audio_data["gain"] = float(audio["target_volume"])
+                except (TypeError, ValueError):
+                    pass
+            stt = data.get("stt")
+            if isinstance(stt, dict) and "vad_sensitivity" in stt and "vad_aggressiveness" not in audio_data:
+                try:
+                    audio_data["vad_aggressiveness"] = int(stt["vad_sensitivity"])
+                except (TypeError, ValueError):
+                    pass
+            normalized["audio"] = audio_data
+
+        providers = normalized.get("providers") if isinstance(normalized.get("providers"), dict) else {}
+        stt = data.get("stt")
+        if isinstance(stt, dict) and isinstance(stt.get("providers"), list):
+            providers["stt"] = stt["providers"]
+        llm = data.get("llm")
+        if isinstance(llm, dict) and isinstance(llm.get("providers"), list):
+            providers["llm"] = llm["providers"]
+        translate = data.get("translate")
+        if isinstance(translate, dict) and isinstance(translate.get("providers"), list):
+            providers["translation"] = translate["providers"]
+        if providers:
+            normalized["providers"] = providers
+
+        dictation = data.get("dictation")
+        if isinstance(dictation, dict) and "injection_method" in dictation:
+            text_injection = normalized.get("text_injection") if isinstance(normalized.get("text_injection"), dict) else {}
+            text_injection["method"] = str(dictation["injection_method"])
+            normalized["text_injection"] = text_injection
+
+        return normalized
 
     def _apply_providers(self, data: dict[str, Any]) -> None:
         """Apply provider slot and STT language settings."""
