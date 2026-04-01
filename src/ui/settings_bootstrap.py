@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def build_payload(config: AppConfig) -> dict[str, Any]:
     """Build the bootstrap payload dict for first paint."""
-    from src.ui.settings_contract import config_to_ui
+    from src.ui.settings_contract import config_to_ui  # noqa: PLC0415
 
     lang = config.ui.language if hasattr(config, "ui") else "uk"
     return {
@@ -48,7 +48,7 @@ def _load_translations() -> dict[str, dict[str, str]]:
 
 def _load_theme() -> str:
     try:
-        from src.utils import load_translate_settings
+        from src.utils import load_translate_settings  # noqa: PLC0415
         return load_translate_settings().get("theme", "dark")
     except Exception:
         return "dark"

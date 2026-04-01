@@ -78,7 +78,9 @@ def _open_webview_window(
 ) -> None:
     """Create and show a PyWebView window. Runs on main thread."""
     import sys  # noqa: PLC0415
+
     import webview  # noqa: PLC0415
+
     from src.ui.web_bridge import WebBridge  # noqa: PLC0415
 
     bridge = WebBridge(config, audio_capture, on_save)

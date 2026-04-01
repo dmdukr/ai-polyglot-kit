@@ -8,8 +8,11 @@ Usage: python -m src.ui.build_settings
 """
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 WEB_DIR = Path(__file__).parent / "web"
 
@@ -19,7 +22,7 @@ def generate_i18n_data_js() -> None:
     i18n = (WEB_DIR / "i18n.json").read_text(encoding="utf-8")
     out = WEB_DIR / "js" / "i18n-data.js"
     out.write_text(f"var _EMBEDDED_I18N = {i18n.strip()};\n", encoding="utf-8")
-    print(f"Generated: {out}")
+    logger.info("Generated: %s", out)
 
 
 def build_bundle() -> None:
@@ -48,7 +51,7 @@ def build_bundle() -> None:
 
     out = WEB_DIR / "_bundled.html"
     out.write_text(html, encoding="utf-8")
-    print(f"Bundled: {out} ({len(html):,} bytes)")
+    logger.info("Bundled: %s (%d bytes)", out, len(html))
 
 
 def build() -> None:
