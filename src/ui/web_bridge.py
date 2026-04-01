@@ -14,7 +14,6 @@ import os
 import subprocess
 import sys
 import webbrowser
-from dataclasses import asdict
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -145,42 +144,29 @@ class WebBridge:
 
     @_safe
     def get_config(self) -> dict[str, Any]:
-        """Return the full configuration as a plain dict for the JS forms."""
+        """Return config as UI payload."""
+        from src.ui.settings_contract import config_to_ui  # noqa: PLC0415
         logger.info("get_config called")
-        try:
-            data = self._config_to_web(self._config)
-        except Exception:
-            logger.exception("get_config: _config_to_web failed, using asdict fallback")
-            data = asdict(self._config)
-        data["autostart"] = self._get_autostart()
+        data = config_to_ui(self._config)
         data["theme"] = self._load_theme()
-        logger.info("get_config: returning %d keys, language=%s", len(data), data.get("language", data.get("ui", {}).get("language", "?")))
+        logger.info("get_config: returning %d keys", len(data))
         return data
 
     @_safe
     def save_config(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Persist configuration from JS form data.
+        """Apply UI payload back to config and persist."""
+        from src.ui.settings_contract import ui_to_config  # noqa: PLC0415
 
-        Applies the incoming dict onto the live :class:`AppConfig`, writes
-        the YAML and ``.env`` files, and invokes the ``on_save`` callback.
+        theme = data.pop("theme", None)
+        if theme:
+            self._save_theme(theme)
 
-        Returns ``{"success": True}`` on success.
-        """
-        normalized = self._normalize_web_config(data)
-
-        self._apply_config(normalized)
+        ui_to_config(data, self._config)
         self._write_config()
         self._write_env()
-        self._save_theme(data.get("theme", "auto"))
-
-        # Autostart
-        autostart = data.get("autostart")
-        if autostart is not None:
-            self._set_autostart(bool(autostart))
 
         if self._on_save is not None:
             self._on_save(restart=True)
-
         return {"success": True}
 
     @_safe
@@ -750,220 +736,6 @@ class WebBridge:
     # Internal helpers
     # ------------------------------------------------------------------
 
-    def _apply_config(self, data: dict[str, Any]) -> None:
-        """Map incoming JS form dict onto the live :class:`AppConfig`."""
-        self._apply_providers(data)
-        self._apply_audio(data)
-        self._apply_dictation(data)
-        self._apply_ui(data)
-
-    @staticmethod
-    def _config_to_web(config: AppConfig) -> dict[str, Any]:
-        """Adapt the nested Python config to the flatter SPA contract."""
-        data = asdict(config)
-        ui = data.get("ui", {})
-        audio = data.get("audio", {})
-        providers = data.get("providers", {})
-
-        web_data = dict(data)
-        web_data["language"] = ui.get("language", "uk")
-        web_data["telemetry"] = data.get("telemetry", {}).get("enabled", False)
-        web_data["sound_feedback"] = bool(ui.get("sound_on_start", False) or ui.get("sound_on_stop", False))
-        web_data["show_overlay"] = ui.get("show_notifications", False)
-        web_data["hotkeys"] = {
-            "record": data.get("hotkey", ""),
-            "feedback": "",
-            "cancel": "",
-            "paste_last": "",
-            "translate": "",
-            "min_hold_ms": 200,
-        }
-        web_data["audio"] = {
-            **audio,
-            "device_id": audio.get("mic_device_index"),
-            "target_volume": audio.get("gain", 0.0),
-        }
-        web_data["stt"] = {
-            "providers": providers.get("stt", []),
-            "temperature": data.get("groq", {}).get("stt_temperature", 0.0),
-            "vad_sensitivity": audio.get("vad_aggressiveness", 1),
-        }
-        web_data["llm"] = {
-            "providers": providers.get("llm", []),
-        }
-        web_data["translate"] = {
-            "providers": providers.get("translation", []),
-        }
-
-        return web_data
-
-    @staticmethod
-    def _normalize_web_config(data: dict[str, Any]) -> dict[str, Any]:
-        """Adapt the flatter SPA payload back to the nested Python config."""
-        normalized = dict(data)
-
-        ui = normalized.get("ui") if isinstance(normalized.get("ui"), dict) else {}
-        if "language" in data:
-            ui["language"] = str(data["language"])
-        if "show_overlay" in data:
-            ui["show_notifications"] = bool(data["show_overlay"])
-        if "sound_feedback" in data:
-            ui["sound_on_start"] = bool(data["sound_feedback"])
-            ui["sound_on_stop"] = bool(data["sound_feedback"])
-        if ui:
-            normalized["ui"] = ui
-
-        if isinstance(data.get("telemetry"), bool):
-            normalized["telemetry"] = {"enabled": bool(data["telemetry"])}
-
-        hotkeys = data.get("hotkeys")
-        if isinstance(hotkeys, dict):
-            record_hotkey = str(hotkeys.get("record", "")).strip()
-            if record_hotkey:
-                normalized["hotkey"] = record_hotkey
-                normalized["ptt_key"] = record_hotkey
-
-        audio = data.get("audio")
-        if isinstance(audio, dict):
-            audio_data = dict(audio)
-            if "device_id" in audio and "mic_device_index" not in audio_data:
-                raw_device_id = audio.get("device_id")
-                if raw_device_id in (None, ""):
-                    audio_data["mic_device_index"] = None
-                else:
-                    try:
-                        audio_data["mic_device_index"] = int(raw_device_id)
-                    except (TypeError, ValueError):
-                        audio_data["mic_device_index"] = None
-            if "target_volume" in audio and "gain" not in audio_data:
-                try:
-                    audio_data["gain"] = float(audio["target_volume"])
-                except (TypeError, ValueError):
-                    pass
-            stt = data.get("stt")
-            if isinstance(stt, dict) and "vad_sensitivity" in stt and "vad_aggressiveness" not in audio_data:
-                try:
-                    audio_data["vad_aggressiveness"] = int(stt["vad_sensitivity"])
-                except (TypeError, ValueError):
-                    pass
-            normalized["audio"] = audio_data
-
-        providers = normalized.get("providers") if isinstance(normalized.get("providers"), dict) else {}
-        stt = data.get("stt")
-        if isinstance(stt, dict) and isinstance(stt.get("providers"), list):
-            providers["stt"] = stt["providers"]
-        llm = data.get("llm")
-        if isinstance(llm, dict) and isinstance(llm.get("providers"), list):
-            providers["llm"] = llm["providers"]
-        translate = data.get("translate")
-        if isinstance(translate, dict) and isinstance(translate.get("providers"), list):
-            providers["translation"] = translate["providers"]
-        if providers:
-            normalized["providers"] = providers
-
-        dictation = data.get("dictation")
-        if isinstance(dictation, dict) and "injection_method" in dictation:
-            text_injection = normalized.get("text_injection") if isinstance(normalized.get("text_injection"), dict) else {}
-            text_injection["method"] = str(dictation["injection_method"])
-            normalized["text_injection"] = text_injection
-
-        return normalized
-
-    def _apply_providers(self, data: dict[str, Any]) -> None:
-        """Apply provider slot and STT language settings."""
-        from src.providers import detect_provider as _detect  # noqa: PLC0415
-        from src.providers import get_provider_base_url  # noqa: PLC0415
-
-        cfg = self._config
-
-        def _read_slots(raw_slots: list[dict[str, Any]]) -> list[dict[str, str]]:
-            result: list[dict[str, str]] = []
-            for slot in raw_slots:
-                key = str(slot.get("api_key", "")).strip()
-                provider = str(slot.get("provider", "")).strip()
-                model = str(slot.get("model", "")).strip()
-                base_url = ""
-                if key:
-                    info = _detect(key)
-                    if info:
-                        base_url = info.base_url
-                    elif provider:
-                        base_url = get_provider_base_url(provider)
-                result.append({"api_key": key, "provider": provider, "base_url": base_url, "model": model})
-            return result
-
-        providers = data.get("providers", {})
-        if isinstance(providers, dict):
-            if "stt" in providers:
-                cfg.providers.stt = _read_slots(providers["stt"])
-            if "llm" in providers:
-                cfg.providers.llm = _read_slots(providers["llm"])
-            if "translation" in providers:
-                cfg.providers.translation = _read_slots(providers["translation"])
-
-        # Backward compat: copy first STT key to groq config
-        if cfg.providers.stt and cfg.providers.stt[0].get("api_key"):
-            cfg.groq.api_key = cfg.providers.stt[0]["api_key"]
-            cfg.groq.stt_model = cfg.providers.stt[0].get("model", "whisper-large-v3-turbo")
-        if cfg.providers.llm and cfg.providers.llm[0].get("api_key"):
-            cfg.groq.llm_model = cfg.providers.llm[0].get("model", "llama-3.3-70b-versatile")
-
-        # STT language
-        stt_language = data.get("groq", {}).get("stt_language")
-        if stt_language is not None:
-            cfg.groq.stt_language = stt_language if stt_language else None
-
-    def _apply_audio(self, data: dict[str, Any]) -> None:
-        """Apply audio settings from incoming data."""
-        cfg = self._config
-        audio = data.get("audio", {})
-        if not isinstance(audio, dict):
-            return
-        if "mic_device_index" in audio:
-            val = audio["mic_device_index"]
-            cfg.audio.mic_device_index = int(val) if val is not None else None
-        if "vad_aggressiveness" in audio:
-            cfg.audio.vad_aggressiveness = int(audio["vad_aggressiveness"])
-        if "silence_threshold_ms" in audio:
-            cfg.audio.silence_threshold_ms = int(audio["silence_threshold_ms"])
-        if "gain" in audio:
-            cfg.audio.gain = float(audio["gain"])
-
-    def _apply_dictation(self, data: dict[str, Any]) -> None:
-        """Apply hotkey, normalization, and text injection settings."""
-        cfg = self._config
-        if "hotkey" in data:
-            cfg.hotkey = str(data["hotkey"]).strip()
-            cfg.ptt_key = cfg.hotkey
-        if "hotkey_mode" in data:
-            cfg.hotkey_mode = str(data["hotkey_mode"])
-
-        norm = data.get("normalization", {})
-        if isinstance(norm, dict) and "enabled" in norm:
-            cfg.normalization.enabled = bool(norm["enabled"])
-
-        text_inj = data.get("text_injection", {})
-        if isinstance(text_inj, dict) and "method" in text_inj:
-            cfg.text_injection.method = str(text_inj["method"])
-
-    def _apply_ui(self, data: dict[str, Any]) -> None:
-        """Apply UI, telemetry, and interface settings."""
-        cfg = self._config
-        ui = data.get("ui", {})
-        if isinstance(ui, dict):
-            if "sound_on_start" in ui:
-                cfg.ui.sound_on_start = bool(ui["sound_on_start"])
-            if "sound_on_stop" in ui:
-                cfg.ui.sound_on_stop = bool(ui["sound_on_stop"])
-            if "show_notifications" in ui:
-                cfg.ui.show_notifications = bool(ui["show_notifications"])
-            if "language" in ui:
-                cfg.ui.language = str(ui["language"])
-
-        telemetry = data.get("telemetry", {})
-        if isinstance(telemetry, dict) and "enabled" in telemetry:
-            cfg.telemetry.enabled = bool(telemetry["enabled"])
-
     def _write_config(self) -> None:
         """Write current config to ``config.yaml`` in APPDATA."""
         from src.config import APP_DIR  # noqa: PLC0415
@@ -1010,52 +782,6 @@ class WebBridge:
         from src.utils import save_translate_settings  # noqa: PLC0415
 
         save_translate_settings({"theme": theme})
-
-    @staticmethod
-    def _get_autostart() -> bool:
-        """Check if the app is registered for Windows startup."""
-        if sys.platform != "win32":
-            return False
-        try:
-            import winreg  # noqa: PLC0415
-
-            from src.config import APP_NAME  # noqa: PLC0415
-
-            with winreg.OpenKey(
-                winreg.HKEY_CURRENT_USER,
-                r"Software\Microsoft\Windows\CurrentVersion\Run",
-                0,
-                winreg.KEY_READ,
-            ) as key:
-                winreg.QueryValueEx(key, APP_NAME)
-                return True
-        except Exception:
-            return False
-
-    @staticmethod
-    def _set_autostart(enabled: bool) -> None:
-        """Add or remove the app from Windows startup."""
-        if sys.platform != "win32":
-            return
-        try:
-            import winreg  # noqa: PLC0415
-
-            from src.config import APP_NAME  # noqa: PLC0415
-
-            reg_key = r"Software\Microsoft\Windows\CurrentVersion\Run"
-            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_key, 0, winreg.KEY_SET_VALUE) as key:
-                if enabled:
-                    exe_path = sys.executable if getattr(sys, "frozen", False) else f'"{sys.executable}" -m src.main'
-                    winreg.SetValueEx(key, APP_NAME, 0, winreg.REG_SZ, f'"{exe_path}"')
-                    logger.info("Autostart enabled")
-                else:
-                    try:
-                        winreg.DeleteValue(key, APP_NAME)
-                        logger.info("Autostart disabled")
-                    except FileNotFoundError:
-                        pass
-        except Exception:
-            logger.exception("Failed to set autostart")
 
 
 def _refresh_tray_menu() -> None:
