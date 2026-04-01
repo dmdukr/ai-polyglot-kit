@@ -8,38 +8,6 @@
   'use strict';
 
   // ============================================================
-  // 0. EARLY LANGUAGE APPLY (before bridge, before init)
-  // ============================================================
-  // Python passes ?lang=uk in URL. Apply translations immediately.
-  (function earlyLang() {
-    // Extract lang from URL — works on file:// and http://
-    var lang = null;
-    try {
-      lang = document.documentElement.getAttribute('data-initial-lang');
-      if (!lang) {
-        var match = window.location.href.match(/[?&]lang=([a-z]{2})/);
-        lang = match ? match[1] : null;
-      }
-      if (!lang) {
-        lang = document.documentElement.lang;
-      }
-    } catch(e) {}
-
-    if (lang && lang !== 'en' && typeof _EMBEDDED_I18N !== 'undefined' && _EMBEDDED_I18N[lang]) {
-      var tr = _EMBEDDED_I18N[lang];
-      document.querySelectorAll('[data-i18n]').forEach(function (el) {
-        var key = el.getAttribute('data-i18n');
-        if (tr[key]) el.textContent = tr[key];
-      });
-      document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
-        var key = el.getAttribute('data-i18n-placeholder');
-        if (tr[key]) el.placeholder = tr[key];
-      });
-      document.documentElement.lang = lang;
-    }
-  })();
-
-  // ============================================================
   // 1. INITIALIZATION
   // ============================================================
 
@@ -52,14 +20,8 @@
   /** Current active page id (e.g. 'general'). */
   var activePage = 'general';
 
-  /** Current language code ('en' | 'uk'). */
-  var currentLang = 'en';
-
   /** Current theme ('dark' | 'light'). */
   var currentTheme = 'dark';
-
-  /** Original English text cache for i18n restore (element -> text). */
-  var origTexts = new Map();
 
   /** Hotkey capture state. */
   var currentHotkeyTarget = null;
@@ -71,11 +33,13 @@
    * Main initialization — called when pywebview bridge is ready
    * or on DOMContentLoaded if bridge is already present.
    */
-  async function init() {
+  async function init(bootstrap) {
     if (window.pywebview && window.pywebview.api) {
       bridgeReady = true;
       api = window.pywebview.api;
     }
+
+    I18n.init(bootstrap);
 
     setupTitlebar();
     setupNavigation();
@@ -109,29 +73,30 @@
   }
 
   // Wait for bridge: poll every 50ms (pywebviewready event is unreliable)
-  function waitForBridge() {
+  function start() {
+    var bootstrap = (typeof _BOOTSTRAP !== 'undefined') ? _BOOTSTRAP : null;
     if (window.pywebview && window.pywebview.api) {
-      init();
+      init(bootstrap);
     } else {
       var attempts = 0;
       var poll = setInterval(function () {
         attempts++;
         if (window.pywebview && window.pywebview.api) {
           clearInterval(poll);
-          init();
+          init(bootstrap);
         } else if (attempts > 100) { // 5 seconds
           clearInterval(poll);
           console.warn('[app.js] Bridge not found after 5s, running without it');
-          init();
+          init(bootstrap);
         }
       }, 50);
     }
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', waitForBridge);
+    document.addEventListener('DOMContentLoaded', start);
   } else {
-    waitForBridge();
+    start();
   }
 
 
@@ -285,14 +250,12 @@
     'Creative': '\u041a\u0440\u0435\u0430\u0442\u0438\u0432\u043d\u043e'
   };
 
-  /** Translation dictionary loaded from the Python bridge. */
-  var translations = {};
-
   function setupI18n() {
     var langSelect = document.getElementById('lang-select');
     if (langSelect) {
       langSelect.addEventListener('change', function () {
-        setLang(this.value);
+        I18n.setLang(this.value);
+        refreshSliderLabels();
       });
     }
   }
@@ -303,101 +266,8 @@
    * @returns {string}
    */
   function sliderLabel(key) {
-    if (currentLang === 'uk' && SLIDER_UK[key]) return SLIDER_UK[key];
+    if (I18n.lang === 'uk' && SLIDER_UK[key]) return SLIDER_UK[key];
     return key;
-  }
-
-  /**
-   * Load translations from the Python bridge for the given language.
-   * Falls back to the embedded UK dictionary if bridge is unavailable.
-   * @param {string} lang
-   */
-  /** Embedded i18n data — no fetch needed, works on any protocol */
-  var i18nData = null;
-
-  function _loadEmbeddedI18n() {
-    if (typeof _EMBEDDED_I18N !== 'undefined') return _EMBEDDED_I18N;
-    return {};
-  }
-
-  async function loadTranslations(lang) {
-    if (!i18nData) {
-      i18nData = _loadEmbeddedI18n();
-    }
-    translations = (i18nData[lang]) || {};
-    console.log('[i18n] Loaded', Object.keys(translations).length, 'keys for', lang);
-  }
-
-  /**
-   * Walk the DOM and translate all translatable elements.
-   * Supports two mechanisms:
-   *   1. [data-i18n] attribute: looked up in `translations` dict by key.
-   *   2. Text-content matching: English text matched against embedded UK map.
-   * @param {string} lang - 'en' or 'uk'
-   */
-  function walkAndTranslate(lang) {
-    // Get both language dicts from embedded data
-    var enDict = (typeof _EMBEDDED_I18N !== 'undefined' && _EMBEDDED_I18N.en) || {};
-    var langDict = (typeof _EMBEDDED_I18N !== 'undefined' && _EMBEDDED_I18N[lang]) || translations;
-
-    // Translate data-i18n keyed elements
-    document.querySelectorAll('[data-i18n]').forEach(function (el) {
-      var key = el.getAttribute('data-i18n');
-      var text = langDict[key] || enDict[key];
-      if (text) el.textContent = text;
-    });
-
-    // Translate placeholders
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
-      var key = el.getAttribute('data-i18n-placeholder');
-      var text = langDict[key] || enDict[key];
-      if (text) el.placeholder = text;
-    });
-
-    // Also translate plain text elements by selector (mockup compatibility)
-    var selectors = [
-      '.page-title', '.card-title', '.form-label', '.form-hint',
-      '.sidebar-section', '.modal-title', '.btn', '.btn-sm',
-      '.btn-primary', '.btn-danger', '.btn-success', '.badge',
-      '.stat-label', '.stat-value', '.proc-text', '.filter-chip',
-      '.hotkey-capture-hint', '.enrollment-step div', '.model-name',
-      '.model-desc', '.model-size', '.banner', '.btn-text',
-      '.version-info div', 'option', 'th', '.history-expanded-label',
-      '.app-name', '.import-drop div'
-    ];
-
-    document.querySelectorAll(selectors.join(',')).forEach(function (el) {
-      if (!origTexts.has(el)) {
-        origTexts.set(el, el.textContent.trim());
-      }
-      var original = origTexts.get(el);
-      if (!original || el.childElementCount !== 0) return;
-
-      if (lang === 'en') {
-        el.textContent = original;
-      } else {
-        // Try translations dict by text content as key
-        var translated = translations[original];
-        if (translated) el.textContent = translated;
-      }
-    });
-
-    // Translate plain placeholders
-    document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(function (el) {
-      if (!el.dataset.origPlaceholder) {
-        el.dataset.origPlaceholder = el.placeholder;
-      }
-      var orig = el.dataset.origPlaceholder;
-      if (lang === 'en') {
-        el.placeholder = orig;
-      } else {
-        var translated = translations[orig];
-        if (translated) el.placeholder = translated;
-      }
-    });
-
-    // Update html lang attribute
-    document.documentElement.lang = lang === 'uk' ? 'uk' : 'en';
   }
 
   /**
@@ -424,27 +294,8 @@
    * @param {string} lang - 'en' or 'uk'
    */
   async function setLang(lang) {
-    currentLang = lang;
-
-    // Notify backend (updates i18n globally + rebuilds tray menu)
-    if (api && api.set_language) {
-      try {
-        var result = await api.set_language(lang);
-        if (result && result.translations) {
-          _cachedTranslations = result.translations;
-        }
-      } catch (e) {
-        console.warn('[i18n] set_language failed:', e);
-      }
-    }
-
-    await loadTranslations(lang);
-    walkAndTranslate(lang);
+    I18n.setLang(lang);
     refreshSliderLabels();
-
-    try {
-      localStorage.setItem('apk_lang', lang);
-    } catch (e) { /* ignore */ }
   }
 
 
@@ -614,7 +465,7 @@
 
     // -- General --
     config.theme = getSelectValue('theme-select') || currentTheme;
-    config.language = getSelectValue('lang-select') || currentLang;
+    config.language = getSelectValue('lang-select') || I18n.lang;
     config.tray_icon_style = getSelectValue('tray-icon-select');
     config.autostart = getBoolToggle('toggle-autostart');
     config.start_minimized = getBoolToggle('toggle-start-minimized');
