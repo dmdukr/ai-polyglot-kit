@@ -15,8 +15,14 @@
     // Extract lang from URL — works on file:// and http://
     var lang = null;
     try {
-      var match = window.location.href.match(/[?&]lang=([a-z]{2})/);
-      lang = match ? match[1] : null;
+      lang = document.documentElement.getAttribute('data-initial-lang');
+      if (!lang) {
+        var match = window.location.href.match(/[?&]lang=([a-z]{2})/);
+        lang = match ? match[1] : null;
+      }
+      if (!lang) {
+        lang = document.documentElement.lang;
+      }
     } catch(e) {}
 
     if (lang && lang !== 'en' && typeof _EMBEDDED_I18N !== 'undefined' && _EMBEDDED_I18N[lang]) {
@@ -458,7 +464,7 @@
       console.log('[config] Config loaded from backend');
     } catch (e) {
       console.error('[config] Failed to load config:', e);
-      showToast('Failed to load settings', 'error');
+      console.warn('[config] Settings load error (non-critical):', e.message);
     }
   }
 
