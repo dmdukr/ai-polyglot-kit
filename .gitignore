@@ -20,3 +20,7 @@ node_modules/
 package-lock.json
 package.json
 .eslintrc.json
+
+# Settings UI build artifacts
+src/ui/web/_bundled.html
+src/ui/web/js/i18n-data.js
