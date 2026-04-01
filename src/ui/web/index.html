@@ -1564,7 +1564,7 @@
   </div>
 
   <div class="footer">
-    <span style="margin-right:auto;display:flex;align-items:center;gap:8px"><span class="form-hint" id="footer-version">v...</span><a href="#" class="form-hint" style="color:var(--accent-highlight);text-decoration:none;font-size:11px;background:rgba(133,96,10,0.15);padding:2px 8px;border-radius:10px" id="footer-update-badge" data-open="modal-update">&#8593; <span class="btn-text" data-i18n="footer.updateAvailable">v6.1.0 available</span></a></span>
+    <span style="margin-right:auto;display:flex;align-items:center;gap:8px"><span class="form-hint" id="footer-version">v...</span><a href="#" class="form-hint" style="color:var(--accent-highlight);text-decoration:none;font-size:11px;background:rgba(133,96,10,0.15);padding:2px 8px;border-radius:10px" id="footer-update-badge">&#8593; <span class="btn-text" data-i18n="footer.updateAvailable">v6.1.0 available</span></a></span>
     <button class="btn" id="btn-cancel" data-i18n="btn.cancel">Cancel</button>
     <button class="btn btn-primary" id="btn-save" data-i18n="btn.save">Save</button>
   </div>
@@ -1898,11 +1898,21 @@
         <div class="modal-title" data-i18n="modal.checkUpdates">Check for Updates</div>
         <button class="modal-close" data-close="modal-check-update">&times;</button>
       </div>
-      <div class="modal-body" style="text-align:center;padding:24px">
-        <div style="font-size:48px;margin-bottom:12px">&#10003;</div>
-        <div style="font-size:14px;font-weight:600;color:var(--success)" data-i18n="modal.update.upToDate">You're up to date!</div>
-        <div class="form-hint" style="margin-top:8px" id="update-modal-version">AI Polyglot Kit</div>
-        <div class="form-hint">Last checked: just now</div>
+      <div class="modal-body" style="text-align:center;padding:24px" id="update-modal-body">
+        <div id="update-checking" style="display:none">
+          <div style="font-size:48px;margin-bottom:12px">&#8987;</div>
+          <div style="font-size:14px;font-weight:600" data-i18n="modal.update.checking">Checking...</div>
+        </div>
+        <div id="update-up-to-date" style="display:none">
+          <div style="font-size:48px;margin-bottom:12px">&#10003;</div>
+          <div style="font-size:14px;font-weight:600;color:var(--success)" data-i18n="modal.update.upToDate">You're up to date!</div>
+          <div class="form-hint" style="margin-top:8px" id="update-modal-version">AI Polyglot Kit</div>
+        </div>
+        <div id="update-available" style="display:none">
+          <div style="font-size:48px;margin-bottom:12px">&#127381;</div>
+          <div style="font-size:14px;font-weight:600;color:var(--accent-highlight)" id="update-new-version"></div>
+          <a href="#" id="update-download-link" style="display:inline-block;margin-top:12px;color:var(--accent-highlight)" data-i18n="modal.update.download">Download</a>
+        </div>
       </div>
       <div class="modal-footer"><button class="btn btn-primary" data-close="modal-check-update" data-i18n="btn.ok">OK</button></div>
     </div>

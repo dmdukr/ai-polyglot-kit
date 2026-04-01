@@ -1700,8 +1700,6 @@
       'btn-delete-model': 'modal-confirm-delete-model',
       'btn-download-small': 'modal-download-model',
       'btn-download-large': 'modal-download-model',
-      'btn-check-update': 'modal-check-update',
-      'btn-check-update-general': 'modal-check-update',
       'btn-reset-all': 'modal-confirm-reset',
       'btn-audit-log': 'modal-audit-log',
       'btn-regen-secret': 'modal-confirm-regen-secret'
@@ -1712,6 +1710,40 @@
         UiCore.openModal(modalBindings[btnId]);
       });
     });
+
+    // Check for updates buttons
+    async function doCheckUpdate() {
+      var checking = document.getElementById('update-checking');
+      var upToDate = document.getElementById('update-up-to-date');
+      var available = document.getElementById('update-available');
+      if (checking) checking.style.display = '';
+      if (upToDate) upToDate.style.display = 'none';
+      if (available) available.style.display = 'none';
+      UiCore.openModal('modal-check-update');
+      try {
+        var result = api ? await api.check_update() : null;
+        if (checking) checking.style.display = 'none';
+        if (result && result.available) {
+          if (available) available.style.display = '';
+          var verEl = document.getElementById('update-new-version');
+          if (verEl) verEl.textContent = 'v' + result.version + ' ' + I18n.t('footer.updateAvailable');
+          var link = document.getElementById('update-download-link');
+          if (link) {
+            link.onclick = function(e) {
+              e.preventDefault();
+              if (api && api.open_url) api.open_url(result.url);
+            };
+          }
+        } else {
+          if (upToDate) upToDate.style.display = '';
+        }
+      } catch (e) {
+        if (checking) checking.style.display = 'none';
+        if (upToDate) upToDate.style.display = '';
+      }
+    }
+    bindIfExists('btn-check-update', doCheckUpdate);
+    bindIfExists('btn-check-update-general', doCheckUpdate);
 
     // Confirmation action buttons
     bindIfExists('btn-confirm-delete-profile', async function () {
@@ -2064,7 +2096,9 @@
           if (badgeText) badgeText.textContent = 'v' + info.latest + ' available';
           badge.onclick = function(e) {
             e.preventDefault();
-            if (api && api.check_update) api.check_update();
+            // Navigate to General page
+            var generalTab = document.querySelector('.sidebar-item[data-page="general"]');
+            if (generalTab) generalTab.click();
           };
         } else {
           badge.style.display = 'none';
