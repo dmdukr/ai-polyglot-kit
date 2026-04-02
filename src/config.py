@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 # Default paths
-APP_VERSION = "7.0.3"
+APP_VERSION = "7.0.4"
 APP_NAME = "AIPolyglotKit"
 GITHUB_REPO = "dmdukr/ai-polyglot-kit"
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME
@@ -177,6 +177,9 @@ class AppConfig:
         else:
             logger.warning("config: config file not found, using defaults — path=%s", config_path)
 
+        # Sanitize broken values from previous versions
+        config._sanitize()
+
         # Override API key from environment
         env_key = os.environ.get("GROQ_API_KEY")
         if env_key:
@@ -250,6 +253,32 @@ class AppConfig:
             else:
                 setattr(self, f.name, value)
                 logger.debug("config: _apply_dict — set field=%s", f.name)
+
+    def _sanitize(self) -> None:
+        """Fix known bad values that may be stored in config.yaml."""
+        # vad_aggressiveness: may be string like "2 — Balanced" from broken form-bind
+        vad = self.audio.vad_aggressiveness
+        if not isinstance(vad, int):
+            try:
+                self.audio.vad_aggressiveness = int(str(vad).split()[0])
+            except (ValueError, IndexError):
+                self.audio.vad_aggressiveness = 1
+            logger.info("config: sanitized vad_aggressiveness %r → %d", vad, self.audio.vad_aggressiveness)
+        if self.audio.vad_aggressiveness not in (0, 1, 2, 3):
+            self.audio.vad_aggressiveness = 1
+            logger.info("config: vad_aggressiveness out of range, reset to 1")
+
+        # text_injection.method: may be display text from broken form-bind
+        method = self.text_injection.method
+        valid_methods = ("sendinput", "clipboard", "uiautomation")
+        if method not in valid_methods:
+            if "clipboard" in str(method).lower():
+                self.text_injection.method = "clipboard"
+            elif "uiautomation" in str(method).lower() or "uia" in str(method).lower():
+                self.text_injection.method = "uiautomation"
+            else:
+                self.text_injection.method = "sendinput"
+            logger.info("config: sanitized text_injection.method %r → %s", method, self.text_injection.method)
 
     def to_dict(self) -> dict:
         """Serialize config to a dict suitable for YAML save.

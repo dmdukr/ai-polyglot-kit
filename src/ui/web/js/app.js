@@ -2215,19 +2215,36 @@
 
       // Use e.code for layout-independent key names (always English)
       var combo = [];
-      if (e.ctrlKey) combo.push('Ctrl');
-      if (e.altKey) combo.push('Alt');
-      if (e.shiftKey) combo.push('Shift');
 
-      var modifiers = ['ControlLeft','ControlRight','AltLeft','AltRight','ShiftLeft','ShiftRight','MetaLeft','MetaRight'];
-      if (modifiers.indexOf(e.code) === -1) {
-        // Map e.code to readable English key name
-        var keyName = e.code
-          .replace('Key', '')       // KeyA → A
-          .replace('Digit', '')     // Digit1 → 1
-          .replace('Numpad', 'Num') // Numpad0 → Num0
-          .replace('Arrow', '');    // ArrowUp → Up
-        combo.push(keyName);
+      // AltGr on Windows sends ctrlKey+altKey simultaneously with code=AltRight
+      var isAltGr = e.code === 'AltRight' && e.ctrlKey;
+
+      if (isAltGr) {
+        // AltGr pressed alone — treat as single key
+        combo.push('right_alt');
+      } else {
+        if (e.ctrlKey && e.code !== 'ControlLeft' && e.code !== 'ControlRight') combo.push('Ctrl');
+        if (e.altKey && e.code !== 'AltLeft' && e.code !== 'AltRight') combo.push('Alt');
+        if (e.shiftKey && e.code !== 'ShiftLeft' && e.code !== 'ShiftRight') combo.push('Shift');
+
+        var modifiers = ['ControlLeft','ControlRight','AltLeft','AltRight','ShiftLeft','ShiftRight','MetaLeft','MetaRight'];
+        if (modifiers.indexOf(e.code) === -1) {
+          // Map e.code to readable English key name
+          var keyName = e.code
+            .replace('Key', '')       // KeyA → A
+            .replace('Digit', '')     // Digit1 → 1
+            .replace('Numpad', 'Num') // Numpad0 → Num0
+            .replace('Arrow', '');    // ArrowUp → Up
+          combo.push(keyName);
+        } else if (e.code === 'AltRight') {
+          combo.push('right_alt');
+        } else if (e.code === 'AltLeft') {
+          combo.push('Alt');
+        } else if (e.code === 'ControlLeft' || e.code === 'ControlRight') {
+          combo.push('Ctrl');
+        } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+          combo.push('Shift');
+        }
       }
       if (combo.length) {
         var hotkeyDisplay = document.getElementById('hotkey-display');
