@@ -178,13 +178,21 @@ class WebBridge:
         return {"success": True}
 
     @_safe
-    def get_version(self) -> dict[str, str]:
-        """Return application name and version."""
+    def get_version(self) -> dict[str, Any]:
+        """Return application name, version, and update availability."""
         from src.config import APP_NAME, APP_VERSION  # noqa: PLC0415
 
         logger.debug("bridge.get_version()")
-        result = {"version": APP_VERSION, "app_name": APP_NAME}
-        logger.debug("bridge.get_version → %s %s", APP_NAME, APP_VERSION)
+        result: dict[str, Any] = {"version": APP_VERSION, "app_name": APP_NAME}
+        try:
+            from src.updater import Updater  # noqa: PLC0415
+            update = Updater().check_now()
+            if update:
+                result["update_available"] = True
+                result["latest"] = update.get("version", "")
+        except Exception:
+            logger.debug("bridge.get_version — update check failed", exc_info=True)
+        logger.debug("bridge.get_version → %s", result)
         return result
 
     # ------------------------------------------------------------------

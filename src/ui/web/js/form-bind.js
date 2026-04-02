@@ -42,6 +42,9 @@ var FormBind = {
       return parseFloat(el.value) / divisor;
     }
     if (el.type === 'number') return parseInt(el.value, 10) || 0;
+    if (el.tagName === 'SELECT' && el.getAttribute('data-cfg-type') === 'int') {
+      return parseInt(el.value, 10) || 0;
+    }
     return el.value;
   },
 

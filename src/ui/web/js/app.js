@@ -1727,6 +1727,12 @@
           if (available) available.style.display = '';
           var verEl = document.getElementById('update-new-version');
           if (verEl) verEl.textContent = 'v' + result.version + ' ' + I18n.t('footer.updateAvailable');
+          var installBtn = document.getElementById('update-install-btn');
+          if (installBtn) {
+            installBtn.onclick = function() {
+              if (api && api.open_url) api.open_url(result.url);
+            };
+          }
           var link = document.getElementById('update-download-link');
           if (link) {
             link.onclick = function(e) {

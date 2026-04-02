@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 # Default paths
-APP_VERSION = "7.0.2"
+APP_VERSION = "7.0.3"
 APP_NAME = "AIPolyglotKit"
 GITHUB_REPO = "dmdukr/ai-polyglot-kit"
 APP_DIR = Path(os.environ.get("APPDATA", "")) / APP_NAME
@@ -278,8 +278,8 @@ class AppConfig:
             errors.append("sample_rate must be 16000 (Whisper requirement)")
         if self.audio.frame_duration_ms not in (10, 20, 30):
             errors.append("frame_duration_ms must be 10, 20, or 30 (webrtcvad requirement)")
-        if self.text_injection.method not in ("sendinput", "clipboard"):
-            errors.append("text_injection.method must be 'sendinput' or 'clipboard'")
+        if self.text_injection.method not in ("sendinput", "clipboard", "uiautomation"):
+            errors.append("text_injection.method must be 'sendinput', 'clipboard', or 'uiautomation'")
         if errors:
             logger.info("config: validation failed — errors=%s", errors)
         else:

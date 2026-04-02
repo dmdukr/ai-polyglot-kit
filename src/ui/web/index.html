@@ -601,7 +601,7 @@
             <div class="form-label" data-i18n="dictation.vadSensitivity">Voice detection sensitivity</div>
             <div class="form-hint" data-i18n="dictation.vadSensitivity.hint">Controls how aggressively the app detects when you stop talking. Lower = more sensitive, catches soft speech but may include background noise. Higher = stricter, cleanly cuts silence but may trim quiet endings. Level 2 works well for most people.</div>
           </div>
-          <select id="vad-select" data-cfg="audio.vad_aggressiveness"><option data-i18n="dictation.vad.0">0 — Very sensitive (catches quiet speech)</option><option data-i18n="dictation.vad.1">1 — Sensitive</option><option selected data-i18n="dictation.vad.2">2 — Balanced (recommended)</option><option data-i18n="dictation.vad.3">3 — Strict (clean cuts, may trim quiet endings)</option></select>
+          <select id="vad-select" data-cfg="audio.vad_aggressiveness" data-cfg-type="int"><option value="0" data-i18n="dictation.vad.0">0 — Very sensitive (catches quiet speech)</option><option value="1" data-i18n="dictation.vad.1">1 — Sensitive</option><option value="2" selected data-i18n="dictation.vad.2">2 — Balanced (recommended)</option><option value="3" data-i18n="dictation.vad.3">3 — Strict (clean cuts, may trim quiet endings)</option></select>
         </div>
       </div>
       <div class="card">
@@ -643,7 +643,7 @@
             <div class="form-label" data-i18n="dictation.defaultInjection">Default injection method</div>
             <div class="form-hint" data-i18n="dictation.defaultInjection.hint">How text is typed into the target app</div>
           </div>
-          <select id="injection-method-select" data-cfg="text_injection.method"><option selected data-i18n="injection.sendInput">Keyboard simulation (SendInput)</option><option data-i18n="injection.clipboard">Clipboard paste (Ctrl+V)</option><option data-i18n="injection.uiAutomation">UI Automation (SetValue)</option></select>
+          <select id="injection-method-select" data-cfg="text_injection.method"><option value="sendinput" selected data-i18n="injection.sendInput">Keyboard simulation (SendInput)</option><option value="clipboard" data-i18n="injection.clipboard">Clipboard paste (Ctrl+V)</option><option value="uiautomation" data-i18n="injection.uiAutomation">UI Automation (SetValue)</option></select>
         </div>
         <div class="form-row">
           <div class="form-label" data-i18n="dictation.fallbackClipboard">Auto-fallback to clipboard on failure</div>
@@ -1911,7 +1911,10 @@
         <div id="update-available" style="display:none">
           <div style="font-size:48px;margin-bottom:12px">&#127381;</div>
           <div style="font-size:14px;font-weight:600;color:var(--accent-highlight)" id="update-new-version"></div>
-          <a href="#" id="update-download-link" style="display:inline-block;margin-top:12px;color:var(--accent-highlight)" data-i18n="modal.update.download">Download</a>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+            <button class="btn btn-primary" id="update-install-btn" data-i18n="modal.update.install">Update</button>
+            <a href="#" id="update-download-link" style="display:inline-flex;align-items:center;color:var(--accent-highlight);font-size:13px" data-i18n="modal.update.download">Download</a>
+          </div>
         </div>
       </div>
       <div class="modal-footer"><button class="btn btn-primary" data-close="modal-check-update" data-i18n="btn.ok">OK</button></div>
